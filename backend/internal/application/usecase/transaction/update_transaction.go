@@ -2,7 +2,6 @@ package transaction
 
 import (
 	"context"
-	"time"
 
 	"coinkeeper/internal/application/dto"
 	"coinkeeper/internal/domain"

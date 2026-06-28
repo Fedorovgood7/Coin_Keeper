@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"coinkeeper/internal/application/dto"
 	"coinkeeper/internal/domain/entity"
 	"coinkeeper/internal/domain/repository"
 )

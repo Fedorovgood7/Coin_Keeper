@@ -3,7 +3,6 @@ package transaction
 import (
 	"context"
 
-	"coinkeeper/internal/domain"
 	"coinkeeper/internal/domain/entity"
 	"coinkeeper/internal/domain/repository"
 )

@@ -2,8 +2,6 @@ package export
 
 import (
 	"context"
-	"encoding/csv"
-	"fmt"
 	"strconv"
 	"time"
 
