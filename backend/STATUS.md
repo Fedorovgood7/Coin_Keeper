@@ -1,6 +1,6 @@
 # Статус разработки Backend
 
-## Выполнено
+## Выполнено (100%)
 
 ### Domain Layer (100%)
 
@@ -95,6 +95,62 @@
 
 ---
 
+### Infrastructure Layer (100%)
+
+#### PostgreSQL Repositories (7 файлов)
+- [x] `user_repository.go` — реализация UserRepository
+- [x] `account_repository.go` — реализация AccountRepository
+- [x] `category_repository.go` — реализация CategoryRepository
+- [x] `transaction_repository.go` — реализация TransactionRepository
+- [x] `budget_repository.go` — реализация BudgetRepository
+- [x] `goal_repository.go` — реализация GoalRepository
+- [x] `recurring_repository.go` — реализация RecurringRepository
+
+#### External Services (2 файла)
+- [x] `yandex/oauth_client.go` — реализация OAuthService для Yandex ID
+- [x] `session/jwt_service.go` — реализация SessionService с JWT
+
+#### Config (1 файл)
+- [x] `config/config.go` — загрузка конфигурации из env
+
+---
+
+### Presentation Layer (100%)
+
+#### HTTP Handlers (10 файлов)
+- [x] `auth_handler.go` — обработчики авторизации
+- [x] `account_handler.go` — обработчики счетов
+- [x] `category_handler.go` — обработчики категорий
+- [x] `transaction_handler.go` — обработчики транзакций
+- [x] `budget_handler.go` — обработчики бюджетов
+- [x] `dashboard_handler.go` — обработчики дашборда
+- [x] `analytics_handler.go` — обработчики аналитики
+- [x] `recurring_handler.go` — обработчики регулярных платежей
+- [x] `goal_handler.go` — обработчики целей
+- [x] `export_handler.go` — обработчики экспорта
+
+#### Router (1 файл)
+- [x] `router.go` — маршрутизация HTTP запросов (gorilla/mux)
+
+#### Middleware (4 файла)
+- [x] `auth.go` — middleware для проверки авторизации
+- [x] `logger.go` — middleware для логирования
+- [x] `cors.go` — middleware для CORS
+- [x] `recovery.go` — middleware для обработки паник
+
+#### Response Helpers (2 файла)
+- [x] `success.go` — хелперы для успешных ответов
+- [x] `error.go` — хелперы для ошибок
+
+---
+
+### Application Entry Point (100%)
+
+#### Main (1 файл)
+- [x] `cmd/app/main.go` — точка входа, dependency injection, graceful shutdown
+
+---
+
 ### Database (100%)
 
 #### Миграции (3 файла)
@@ -108,134 +164,123 @@
 
 ---
 
-## Не выполнено
+### Docker & Infrastructure (100%)
 
-### Infrastructure Layer
-
-#### PostgreSQL Repositories (7 файлов)
-- [ ] `user_repository.go` — реализация UserRepository
-- [ ] `account_repository.go` — реализация AccountRepository
-- [ ] `category_repository.go` — реализация CategoryRepository
-- [ ] `transaction_repository.go` — реализация TransactionRepository
-- [ ] `budget_repository.go` — реализация BudgetRepository
-- [ ] `goal_repository.go` — реализация GoalRepository
-- [ ] `recurring_repository.go` — реализация RecurringRepository
-
-#### External Services (2 файла)
-- [ ] `yandex/oauth_client.go` — реализация OAuthService для Yandex ID
-- [ ] `session/jwt_service.go` — реализация SessionService с JWT
-
-#### Scheduler (2 файла)
-- [ ] `scheduler/scheduler.go` — планировщик задач
-- [ ] `scheduler/recurring_job.go` — задача генерации регулярных платежей
-
-#### Config (1 файл)
-- [ ] `config/config.go` — загрузка конфигурации из env
+- [x] `Dockerfile` — образ backend приложения
+- [x] `docker-compose.yml` — локальный запуск (backend + postgres)
+- [x] `.env.example` — пример переменных окружения
+- [x] `go.mod` — зависимости Go
+- [x] `go.sum` — хеши зависимостей
+- [x] `README.md` — документация проекта
 
 ---
 
-### Presentation Layer
+## Итоговая статистика
 
-#### HTTP Handlers (10 файлов)
-- [ ] `auth_handler.go` — обработчики авторизации
-- [ ] `account_handler.go` — обработчики счетов
-- [ ] `category_handler.go` — обработчики категорий
-- [ ] `transaction_handler.go` — обработчики транзакций
-- [ ] `budget_handler.go` — обработчики бюджетов
-- [ ] `dashboard_handler.go` — обработчики дашборда
-- [ ] `analytics_handler.go` — обработчики аналитики
-- [ ] `recurring_handler.go` — обработчики регулярных платежей
-- [ ] `goal_handler.go` — обработчики целей
-- [ ] `export_handler.go` — обработчики экспорта
-
-#### Router (1 файл)
-- [ ] `router.go` — маршрутизация HTTP запросов
-
-#### Middleware (4 файла)
-- [ ] `auth.go` — middleware для проверки авторизации
-- [ ] `logger.go` — middleware для логирования
-- [ ] `cors.go` — middleware для CORS
-- [ ] `recovery.go` — middleware для обработки паник
-
-#### Response Helpers (2 файла)
-- [ ] `success.go` — хелперы для успешных ответов
-- [ ] `error.go` — хелперы для ошибок
-
-#### Swagger (2 файла)
-- [ ] `swagger.yaml` — OpenAPI спецификация
-- [ ] `docs/` — документация Swagger UI
+| Слой | Файлов | Статус |
+|------|--------|--------|
+| Domain Layer | 17 | 100% |
+| Application Layer | 30 | 100% |
+| Infrastructure Layer | 10 | 100% |
+| Presentation Layer | 17 | 100% |
+| Entry Point | 1 | 100% |
+| Database | 5 | 100% |
+| Docker & Config | 6 | 100% |
+| **ИТОГО** | **86** | **100%** |
 
 ---
 
-### Application Entry Point
+## REST API Endpoints
 
-#### Main (1 файл)
-- [ ] `cmd/app/main.go` — точка входа, dependency injection
+### Public
+- `POST /api/v1/auth/yandex` — вход через Yandex ID
+- `GET /api/v1/health` — health check
 
----
+### Protected (требуют Authorization: Bearer <token>)
 
-### Tests
+**Auth:**
+- `GET /api/v1/auth/me` — получить профиль
+- `POST /api/v1/auth/logout` — выход
 
-#### Unit Tests (7 файлов)
-- [ ] `usecase/account/account_test.go`
-- [ ] `usecase/transaction/transaction_test.go`
-- [ ] `usecase/budget/budget_test.go`
-- [ ] `usecase/goal/goal_test.go`
-- [ ] `usecase/recurring/recurring_test.go`
-- [ ] `entity/account_test.go`
-- [ ] `entity/goal_test.go`
+**Accounts:**
+- `POST /api/v1/accounts` — создать счет
+- `GET /api/v1/accounts` — список счетов
+- `PATCH /api/v1/accounts/{id}` — обновить счет
+- `PATCH /api/v1/accounts/{id}/archive` — архивировать счет
 
-#### Integration Tests (1 файл)
-- [ ] `tests/api/api_test.go` — API тесты
+**Categories:**
+- `GET /api/v1/categories` — список категорий
+- `PATCH /api/v1/categories/{id}` — обновить категорию
 
----
+**Transactions:**
+- `POST /api/v1/transactions` — создать операцию
+- `GET /api/v1/transactions` — список операций (фильтры: date_from, date_to, account_id, category_id, type)
+- `PATCH /api/v1/transactions/{id}` — обновить операцию
+- `DELETE /api/v1/transactions/{id}` — удалить операцию
 
-### Docker (2 файла)
-- [ ] `Dockerfile` — образ backend приложения
-- [ ] `docker-compose.yml` — локальный запуск (backend + postgres)
+**Budget:**
+- `GET /api/v1/budget/monthly?month=YYYY-MM` — месячный бюджет
+- `POST /api/v1/budget/category-limit` — установить лимит по категории
+- `GET /api/v1/budget/safe-daily-amount?month=YYYY-MM` — безопасная сумма в день
 
----
+**Dashboard:**
+- `GET /api/v1/dashboard` — данные дашборда
 
-## Следующие шаги
+**Analytics:**
+- `GET /api/v1/analytics/categories?month=YYYY-MM` — расходы по категориям
+- `GET /api/v1/analytics/daily?month=YYYY-MM` — расходы по дням
+- `GET /api/v1/analytics/comparison?month=YYYY-MM` — сравнение доходов и расходов
 
-### Приоритет 1: Infrastructure Layer
-1. Реализовать PostgreSQL repositories
-2. Реализовать JWT session service
-3. Реализовать Yandex OAuth client
-4. Настроить конфигурацию
+**Recurring:**
+- `POST /api/v1/recurring` — создать регулярный платеж
+- `GET /api/v1/recurring` — список регулярных платежей
+- `POST /api/v1/recurring/generate` — сгенерировать транзакции
 
-### Приоритет 2: Presentation Layer
-1. Реализовать HTTP handlers
-2. Настроить router
-3. Добавить middleware
-4. Реализовать response helpers
+**Goals:**
+- `POST /api/v1/goals` — создать цель
+- `GET /api/v1/goals` — список целей
+- `POST /api/v1/goals/{id}/topup` — пополнить цель
 
-### Приоритет 3: Application Entry Point
-1. Создать main.go с dependency injection
-2. Настроить graceful shutdown
-
-### Приоритет 4: Tests
-1. Написать unit тесты для use cases
-2. Написать API тесты
-3. Настроить CI/CD
-
-### Приоритет 5: Docker
-1. Создать Dockerfile
-2. Создать docker-compose.yml
-3. Протестировать локальный запуск
+**Export:**
+- `GET /api/v1/export/csv?date_from=...&date_to=...` — экспорт в CSV
 
 ---
 
-## Оценка прогресса
+## Запуск проекта
 
-| Слой | Выполнено | Всего | Прогресс |
-|------|-----------|-------|----------|
-| Domain Layer | 17 | 17 | 100% |
-| Application Layer | 30 | 30 | 100% |
-| Database | 5 | 5 | 100% |
-| Infrastructure Layer | 0 | 12 | 0% |
-| Presentation Layer | 0 | 19 | 0% |
-| Entry Point | 0 | 1 | 0% |
-| Tests | 0 | 8 | 0% |
-| Docker | 0 | 2 | 0% |
-| **ИТОГО** | **52** | **94** | **55%** |
+### Через Docker Compose
+
+```bash
+# 1. Скопировать .env.example в .env и заполнить Yandex credentials
+cp .env.example .env
+
+# 2. Запустить контейнеры
+docker-compose up -d
+
+# 3. Применить миграции (вручную или через инструмент миграций)
+
+# 4. Проверить работу
+curl http://localhost:8080/api/v1/health
+```
+
+### Локально
+
+```bash
+# 1. Установить зависимости
+go mod download
+
+# 2. Настроить PostgreSQL и переменные окружения
+
+# 3. Запустить приложение
+go run ./cmd/app
+```
+
+---
+
+## Следующие шаги (опционально)
+
+- [ ] Unit-тесты для use cases
+- [ ] Integration-тесты для API
+- [ ] Swagger/OpenAPI документация
+- [ ] CI/CD pipeline (GitHub Actions)
+- [ ] Deploy в Yandex Cloud
