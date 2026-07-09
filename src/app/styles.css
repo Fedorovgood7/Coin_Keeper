@@ -420,7 +420,11 @@ input, select, textarea {
 }
 
 .transaction-amount.expense {
-  color: var(--text);
+  color: var(--expense);
+}
+
+.transaction-amount.transfer {
+  color: var(--blue);
 }
 
 /* Date group header */

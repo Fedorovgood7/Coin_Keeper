@@ -459,7 +459,9 @@ export function TransactionsPage() {
                     )}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div className="transaction-amount">{formatMoney(tx.amount)}</div>
+                    <div className={`transaction-amount ${tx.type}`}>
+                      {tx.type === 'income' ? '+' : tx.type === 'expense' ? '-' : ''}{formatMoney(tx.amount)}
+                    </div>
                     <button
                       onClick={() => {
                         setEditingTx(tx.id);

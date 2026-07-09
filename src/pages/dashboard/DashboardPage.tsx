@@ -369,7 +369,9 @@ export function DashboardPage() {
                     {tx.periodicity === 'monthly' ? 'Ежемесячно' : tx.periodicity === 'weekly' ? 'Еженедельно' : 'Ежедневно'}
                   </div>
                 </div>
-                <div style={{ fontSize: 14, fontWeight: 700 }}>-{formatMoney(tx.amount)}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: tx.type === 'income' ? 'var(--income)' : tx.type === 'expense' ? 'var(--expense)' : 'var(--blue)' }}>
+                  {tx.type === 'income' ? '+' : tx.type === 'expense' ? '-' : ''}{formatMoney(tx.amount)}
+                </div>
               </div>
             );
           })}
