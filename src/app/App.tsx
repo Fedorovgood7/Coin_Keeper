@@ -1,63 +1,88 @@
-(function() {
-  var CK = (window as any).CK;
-  var h = (React as any).createElement;
-  var useState = (React as any).useState;
-  var useEffect = (React as any).useEffect;
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useStore } from '@/shared/store';
+import { Sidebar, BottomNav } from '@/shared/ui/Navigation';
+import { LoginPage } from '@/pages/login/LoginPage';
+import { DashboardPage } from '@/pages/dashboard/DashboardPage';
+import { TransactionsPage } from '@/pages/transactions/TransactionsPage';
+import { NewTransactionPage } from '@/pages/transactions/NewTransactionPage';
+import { AccountsPage } from '@/pages/accounts/AccountsPage';
+import { AnalyticsPage } from '@/pages/analytics/AnalyticsPage';
+import { BudgetPage } from '@/pages/budget/BudgetPage';
+import '@/app/styles.css';
 
-  var ROUTES: Record<string, any> = {
-    '/login': 'LoginPage',
-    '/dashboard': 'DashboardPage',
-    '/transactions': 'TransactionsPage',
-    '/accounts': 'AccountsPage',
-    '/analytics': 'AnalyticsPage',
-    '/budget': 'BudgetPage'
-  };
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isAuth } = useStore();
+  if (!isAuth) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
 
-  function getRoute(): string {
-    var hash = window.location.hash.replace('#', '') || '/login';
-    return hash;
-  }
+function AppLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="app-container">
+      <Sidebar />
+      <main className="main-content">
+        {children}
+      </main>
+      <BottomNav />
+    </div>
+  );
+}
 
-  function App() {
-    var state = CK.useStore();
-    var route = getRoute();
-
-    useEffect(function() {
-      function onHashChange() {
-        forceUpdate();
-      }
-      window.addEventListener('hashchange', onHashChange);
-      return function() { window.removeEventListener('hashchange', onHashChange); };
-    }, []);
-
-    var [, setTick] = useState(0);
-    function forceUpdate() { setTick(function(n: number) { return n + 1; }); }
-
-    if (!state.auth && route !== '/login') {
-      window.location.hash = '#/login';
-      return null;
-    }
-    if (state.auth && route === '/login') {
-      window.location.hash = '#/dashboard';
-      return null;
-    }
-
-    var componentName = ROUTES[route];
-    if (!componentName || !CK[componentName]) {
-      return h('div', { style: { padding: '40px', textAlign: 'center', color: 'var(--muted)' } },
-        h('p', null, 'Страница не найдена'),
-        h('a', { href: '#/dashboard', style: { color: 'var(--accent-secondary)' } }, 'Перейти на дашборд')
-      );
-    }
-
-    return h(CK[componentName]);
-  }
-
-  CK.App = App;
-
-  CK.render = function(containerId: string) {
-    var container = document.getElementById(containerId);
-    if (!container) return;
-    (ReactDOM as any).createRoot(container).render(h(App));
-  };
-})();
+export function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <AppLayout><DashboardPage /></AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/transactions"
+          element={
+            <ProtectedRoute>
+              <AppLayout><TransactionsPage /></AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/transactions/new"
+          element={
+            <ProtectedRoute>
+              <AppLayout><NewTransactionPage /></AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/accounts"
+          element={
+            <ProtectedRoute>
+              <AppLayout><AccountsPage /></AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute>
+              <AppLayout><AnalyticsPage /></AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/budget"
+          element={
+            <ProtectedRoute>
+              <AppLayout><BudgetPage /></AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
