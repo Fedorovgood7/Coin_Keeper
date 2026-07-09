@@ -5,7 +5,7 @@ import { useNavigate, Link } from 'react-router-dom';
 
 export function NewTransactionPage() {
   const navigate = useNavigate();
-  const { categories, accounts, goals, addTransaction, contributeToGoal } = useStore();
+  const { categories, accounts, goals, addTransaction, contributeToGoal, addCategory } = useStore();
   const [type, setType] = useState<'expense' | 'income' | 'transfer'>('expense');
   const [amount, setAmount] = useState('');
   const [categoryId, setCategoryId] = useState('');
@@ -16,11 +16,32 @@ export function NewTransactionPage() {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [description, setDescription] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryIcon, setNewCategoryIcon] = useState('');
+  const [newCategoryColor, setNewCategoryColor] = useState('#4a7fd9');
 
   const expenseCategories = categories.filter((c) => c.type === 'expense');
   const incomeCategories = categories.filter((c) => c.type === 'income');
   const currentCategories = type === 'expense' ? expenseCategories : type === 'income' ? incomeCategories : [];
   const availableGoals = goals.filter((g) => g.current < g.target);
+
+  const CATEGORY_COLORS = ['#4a7fd9', '#4a9d8b', '#e8b84d', '#e88ba8', '#9b8bd9', '#4a9d5b', '#b8b8c8', '#e8652d', '#d9656b', '#4a9dc9'];
+  const CATEGORY_ICONS = ['', '🍔', '☕', '🏠', '🏦', '', '🛍️', '🚌', '🎮', '', '💻', '🎯', '📱', '', '🎁', '', '💄', '', '✈️', '🔧'];
+
+  const handleCreateCategory = () => {
+    if (!newCategoryName.trim()) return;
+    addCategory({
+      name: newCategoryName.trim(),
+      icon: newCategoryIcon || '📦',
+      color: newCategoryColor,
+      type,
+    });
+    setShowCategoryModal(false);
+    setNewCategoryName('');
+    setNewCategoryIcon('');
+    setNewCategoryColor('#4a7fd9');
+  };
 
   const handleSubmit = () => {
     if (!amount || parseFloat(amount) <= 0) return;
@@ -334,7 +355,11 @@ export function NewTransactionPage() {
               <div className="category-item-label">{cat.name}</div>
             </div>
           ))}
-          <div className="category-item">
+          <div
+            className="category-item"
+            onClick={() => setShowCategoryModal(true)}
+            style={{ cursor: 'pointer' }}
+          >
             <div className="category-icon" style={{ border: '2px dashed var(--border)', background: 'transparent' }}>
               +
             </div>
@@ -370,7 +395,99 @@ export function NewTransactionPage() {
             onClick={() => setIsRecurring(!isRecurring)}
           ></div>
         </div>
+
+        {/* Create button */}
+        <button
+          onClick={handleSubmit}
+          className="btn btn-primary"
+          style={{ width: '100%', marginTop: 24, padding: 18, fontSize: 18 }}
+          disabled={!amount || parseFloat(amount) <= 0 || !categoryId}
+        >
+          Создать
+        </button>
       </div>
+
+      {/* Create category modal */}
+      {showCategoryModal && (
+        <div className="modal-overlay" onClick={() => setShowCategoryModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+              <div style={{ fontSize: 20, fontWeight: 700 }}>Новая категория</div>
+              <button onClick={() => setShowCategoryModal(false)} style={{ fontSize: 24, background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
+            </div>
+
+            {/* Name */}
+            <div className="form-label">НАЗВАНИЕ</div>
+            <input
+              type="text"
+              className="form-input"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              placeholder="Например: Кафе"
+              autoFocus
+            />
+
+            {/* Icon */}
+            <div className="form-label" style={{ marginTop: 16 }}>ИКОНКА</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
+              <button
+                onClick={() => setNewCategoryIcon('')}
+                style={{
+                  width: '100%',
+                  aspectRatio: '1',
+                  borderRadius: 12,
+                  border: newCategoryIcon === '' ? '2px solid var(--header)' : '2px solid var(--border)',
+                  background: 'var(--bg)',
+                  fontSize: 24,
+                  cursor: 'pointer',
+                }}
+              >
+                📦
+              </button>
+              {CATEGORY_ICONS.filter((i) => i).map((icon) => (
+                <button
+                  key={icon}
+                  onClick={() => setNewCategoryIcon(icon)}
+                  style={{
+                    width: '100%',
+                    aspectRatio: '1',
+                    borderRadius: 12,
+                    border: newCategoryIcon === icon ? '2px solid var(--header)' : '2px solid var(--border)',
+                    background: 'var(--bg)',
+                    fontSize: 24,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {icon}
+                </button>
+              ))}
+            </div>
+
+            {/* Color */}
+            <div className="form-label" style={{ marginTop: 16 }}>ЦВЕТ</div>
+            <div className="color-picker">
+              {CATEGORY_COLORS.map((c) => (
+                <div
+                  key={c}
+                  className={`color-option ${newCategoryColor === c ? 'selected' : ''}`}
+                  style={{ background: c }}
+                  onClick={() => setNewCategoryColor(c)}
+                ></div>
+              ))}
+            </div>
+
+            {/* Create button */}
+            <button
+              onClick={handleCreateCategory}
+              className="btn btn-dark"
+              style={{ width: '100%', marginTop: 24, padding: 16 }}
+              disabled={!newCategoryName.trim()}
+            >
+              Создать
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

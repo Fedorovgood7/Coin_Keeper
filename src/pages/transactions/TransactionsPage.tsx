@@ -19,7 +19,6 @@ export function TransactionsPage() {
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
-  const [showDateFilter, setShowDateFilter] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [editingTx, setEditingTx] = useState<string | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -391,19 +390,6 @@ export function TransactionsPage() {
         >
           🏷️ {filterCategoryId ? categories.find((c) => c.id === filterCategoryId)?.name : 'Категория'}
         </button>
-        <button
-          onClick={() => setShowDateFilter(!showDateFilter)}
-          style={{
-            padding: '8px 16px',
-            borderRadius: 20,
-            border: '1px solid var(--border)',
-            fontSize: 14,
-            color: dateFrom || dateTo ? 'var(--accent)' : 'var(--text-secondary)',
-            background: 'white',
-          }}
-        >
-          📅 {dateFrom || dateTo ? 'Даты' : 'Период'}
-        </button>
         {filterCategoryId && (
           <button
             onClick={() => setFilterCategoryId(null)}
@@ -450,31 +436,6 @@ export function TransactionsPage() {
                   {cat.icon} {cat.name}
                 </button>
               ))}
-          </div>
-        </div>
-      )}
-
-      {/* Date filter */}
-      {showDateFilter && (
-        <div style={{ padding: '0 20px', marginBottom: 12 }}>
-          <div style={{ background: 'white', borderRadius: 12, padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-            <div style={{ marginBottom: 12 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>С</label>
-              <input type="date" className="form-input" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
-            </div>
-            <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>По</label>
-              <input type="date" className="form-input" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
-            </div>
-            <button
-              onClick={() => {
-                setDateFrom('');
-                setDateTo('');
-              }}
-              style={{ marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 14, background: 'white' }}
-            >
-              Сбросить
-            </button>
           </div>
         </div>
       )}
