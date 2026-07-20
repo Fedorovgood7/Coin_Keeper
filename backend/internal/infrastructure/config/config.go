@@ -80,6 +80,13 @@ func (c *DatabaseConfig) DSN() string {
 	)
 }
 
+func (c *DatabaseConfig) URL() string {
+	return fmt.Sprintf(
+		"postgres://%s:%s@%s:%s/%s?sslmode=%s",
+		c.User, c.Password, c.Host, c.Port, c.DBName, c.SSLMode,
+	)
+}
+
 func (c *Config) validate() error {
 	if c.Yandex.ClientID == "" {
 		return fmt.Errorf("YANDEX_CLIENT_ID is required")
