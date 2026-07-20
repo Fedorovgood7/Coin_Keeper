@@ -20,6 +20,17 @@
   --font: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
+/* Telegram theme support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c1c1e;
+    --surface: #2c2c2e;
+    --fg: #ffffff;
+    --muted: #8e8e93;
+    --border: #38383a;
+  }
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
