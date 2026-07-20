@@ -56,7 +56,7 @@ func main() {
 
 	log.Println("Connected to database")
 
-	m, err := migrate.New("file://migrations", cfg.Database.DSN())
+	m, err := migrate.New("file://migrations", cfg.Database.URL())
 	if err != nil {
 		log.Fatalf("Failed to create migrator: %v", err)
 	}
