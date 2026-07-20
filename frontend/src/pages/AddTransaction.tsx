@@ -2,41 +2,51 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from '@/store';
 import { formatMoney } from '@/utils';
-import { hapticFeedback } from '@/utils/telegram';
 
 export default function AddTransaction() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialType = searchParams.get('type') as 'expense' | 'income' | 'transfer' || 'expense';
 
-  const { accounts, categories, addTransaction } = useStore();
+  const { accounts, categories, loadAccounts, loadCategories, createTransaction } = useStore();
   const [type, setType] = useState<'expense' | 'income' | 'transfer'>(initialType);
   const [amount, setAmount] = useState('');
-  const [accountId, setAccountId] = useState(accounts[0]?.id || '');
-  const [targetAccountId, setTargetAccountId] = useState(accounts[1]?.id || '');
+  const [accountId, setAccountId] = useState('');
+  const [targetAccountId, setTargetAccountId] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [note, setNote] = useState('');
+  const [comment, setComment] = useState('');
 
   useEffect(() => {
+    loadAccounts();
+    loadCategories();
     setType(initialType);
-  }, [initialType]);
+  }, []);
+
+  useEffect(() => {
+    if (accounts.length > 0 && !accountId) {
+      setAccountId(accounts[0].id);
+    }
+    if (accounts.length > 1 && !targetAccountId) {
+      setTargetAccountId(accounts.find((a) => a.id !== accounts[0]?.id)?.id || accounts[1]?.id || '');
+    }
+  }, [accounts]);
 
   const currentCategories = categories.filter((c) => c.type === type);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!amount || parseFloat(amount) <= 0) return;
     if (type !== 'transfer' && !categoryId) return;
     if (type === 'transfer' && !targetAccountId) return;
 
-    addTransaction({
+    await createTransaction({
       type,
       amount: parseFloat(amount),
       accountId,
-      targetAccountId: type === 'transfer' ? targetAccountId : undefined,
-      categoryId: type !== 'transfer' ? categoryId : undefined,
+      toAccountId: type === 'transfer' ? targetAccountId : undefined,
+      categoryId: type !== 'transfer' ? categoryId : '',
       date: new Date(date).toISOString(),
-      note,
+      comment,
     });
 
     navigate('/transactions');
@@ -102,7 +112,7 @@ export default function AddTransaction() {
                   onClick={() => setCategoryId(cat.id)}
                   style={{ padding: 12, flexDirection: 'column', gap: 4 }}
                 >
-                  <div style={{ fontSize: 24 }}>{cat.emoji || '📦'}</div>
+                  <div style={{ fontSize: 24 }}>{cat.icon || '📦'}</div>
                   <div style={{ fontSize: 11 }}>{cat.name}</div>
                 </button>
               ))}
@@ -120,7 +130,7 @@ export default function AddTransaction() {
                 onChange={(e) => setAccountId(e.target.value)}
               >
                 {accounts
-                  .filter((a) => !a.archived)
+                  .filter((a) => !a.isArchived)
                   .map((acc) => (
                     <option key={acc.id} value={acc.id}>
                       {acc.name} ({formatMoney(acc.balance)})
@@ -136,7 +146,7 @@ export default function AddTransaction() {
                 onChange={(e) => setTargetAccountId(e.target.value)}
               >
                 {accounts
-                  .filter((a) => !a.archived && a.id !== accountId)
+                  .filter((a) => !a.isArchived && a.id !== accountId)
                   .map((acc) => (
                     <option key={acc.id} value={acc.id}>
                       {acc.name} ({formatMoney(acc.balance)})
@@ -156,7 +166,7 @@ export default function AddTransaction() {
               onChange={(e) => setAccountId(e.target.value)}
             >
               {accounts
-                .filter((a) => !a.archived)
+                .filter((a) => !a.isArchived)
                 .map((acc) => (
                   <option key={acc.id} value={acc.id}>
                     {acc.name} ({formatMoney(acc.balance)})
@@ -177,11 +187,11 @@ export default function AddTransaction() {
         </div>
 
         <div className="form-group">
-          <label className="form-label">Заметка</label>
+          <label className="form-label">Комментарий</label>
           <input
             className="form-input"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
             placeholder="Комментарий (необязательно)"
           />
         </div>

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useStore } from '@/store';
 import Login from '@/pages/Login';
@@ -17,6 +18,27 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const [initialized, setInitialized] = useState(false);
+  const loadProfile = useStore((state) => state.loadProfile);
+  const user = useStore((state) => state.user);
+
+  useEffect(() => {
+    const token = localStorage.getItem('coinkeeper-token');
+    if (token && !user) {
+      loadProfile().finally(() => setInitialized(true));
+    } else {
+      setInitialized(true);
+    }
+  }, []);
+
+  if (!initialized) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+        <div>Загрузка...</div>
+      </div>
+    );
+  }
+
   return (
     <Routes>
       <Route path="/login" element={<Login />} />

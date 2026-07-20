@@ -1,13 +1,19 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useStore } from '@/store';
 import { formatMoney, formatDateShort } from '@/utils';
 
 export default function Transactions() {
   const navigate = useNavigate();
-  const { transactions, categories, accounts, deleteTransaction } = useStore();
-  const [filterType, setFilterType] = useState<'all' | 'income' | 'expense' | 'transfer'>('all');
+  const { transactions, categories, accounts, loadTransactions, loadCategories, loadAccounts, deleteTransaction } = useStore();
+  const [filterType, setFilterType] = useState<string>('all');
   const [filterAccountId, setFilterAccountId] = useState<string>('all');
+
+  useEffect(() => {
+    loadTransactions();
+    loadCategories();
+    loadAccounts();
+  }, []);
 
   const filteredTransactions = transactions
     .filter((t) => filterType === 'all' || t.type === filterType)
@@ -72,14 +78,14 @@ export default function Transactions() {
             {txs.map((tx) => {
               const category = categories.find((c) => c.id === tx.categoryId);
               const account = accounts.find((a) => a.id === tx.accountId);
-              const targetAccount = accounts.find((a) => a.id === tx.targetAccountId);
+              const targetAccount = accounts.find((a) => a.id === tx.toAccountId);
               return (
                 <div className="list-item" key={tx.id}>
                   <div
                     className="icon-circle"
                     style={{ background: category?.color || 'var(--border)' }}
                   >
-                    {tx.type === 'transfer' ? '⇄' : category?.emoji || '📦'}
+                    {tx.type === 'transfer' ? '⇄' : category?.icon || '📦'}
                   </div>
                   <div className="list-item-content">
                     <div className="list-item-title">
@@ -88,7 +94,7 @@ export default function Transactions() {
                         : category?.name || 'Без категории'}
                     </div>
                     <div className="list-item-subtitle">
-                      {tx.note || account?.name}
+                      {tx.comment || account?.name}
                     </div>
                   </div>
                   <div

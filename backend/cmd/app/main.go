@@ -28,6 +28,9 @@ import (
 	presentation "coinkeeper/internal/presentation/http"
 	"coinkeeper/internal/presentation/http/handler"
 
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
 )
 
@@ -53,6 +56,15 @@ func main() {
 
 	log.Println("Connected to database")
 
+	m, err := migrate.New("file://migrations", cfg.Database.DSN())
+	if err != nil {
+		log.Fatalf("Failed to create migrator: %v", err)
+	}
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		log.Fatalf("Failed to run migrations: %v", err)
+	}
+	log.Println("Migrations completed")
+
 	userRepo := postgres.NewUserRepository(db)
 	accountRepo := postgres.NewAccountRepository(db)
 	categoryRepo := postgres.NewCategoryRepository(db)
@@ -73,6 +85,7 @@ func main() {
 	archiveAccountUC := account.NewArchiveAccountUseCase(accountRepo)
 
 	getCategoriesUC := category.NewGetCategoriesUseCase(categoryRepo)
+	createCategoryUC := category.NewCreateCategoryUseCase(categoryRepo)
 	updateCategoryUC := category.NewUpdateCategoryUseCase(categoryRepo)
 
 	createTransactionUC := transaction.NewCreateTransactionUseCase(transactionRepo, accountRepo, budgetRepo)
@@ -103,7 +116,7 @@ func main() {
 	handlers := &presentation.Handlers{
 		Auth:        handler.NewAuthHandler(loginWithYandexUC, getProfileUC),
 		Account:     handler.NewAccountHandler(createAccountUC, getAccountsUC, updateAccountUC, archiveAccountUC),
-		Category:    handler.NewCategoryHandler(getCategoriesUC, updateCategoryUC),
+		Category:    handler.NewCategoryHandler(getCategoriesUC, createCategoryUC, updateCategoryUC),
 		Transaction: handler.NewTransactionHandler(createTransactionUC, getTransactionsUC, updateTransactionUC, deleteTransactionUC),
 		Budget:      handler.NewBudgetHandler(getMonthlyBudgetUC, setCategoryLimitUC, calculateSafeDailyAmountUC),
 		Dashboard:   handler.NewDashboardHandler(getDashboardDataUC),

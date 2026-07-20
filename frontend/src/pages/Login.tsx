@@ -1,19 +1,32 @@
-import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from '@/store';
 
 export default function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const login = useStore((state) => state.login);
+  const user = useStore((state) => state.user);
+
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+      return;
+    }
+
+    const code = searchParams.get('code');
+    if (code) {
+      login(code)
+        .then(() => navigate('/'))
+        .catch(() => {});
+    }
+  }, [user, searchParams]);
 
   const handleLogin = () => {
-    // Демо-авторизация (в продакшене здесь будет редирект на Yandex OAuth)
-    const profile = {
-      id: 'user_' + Date.now(),
-      name: 'Пользователь',
-      createdAt: new Date().toISOString(),
-    };
-    login(profile);
-    navigate('/');
+    const clientId = 'f5bdc1e4c2494499b66592bd9fa7ee43';
+    const redirectUri = encodeURIComponent(window.location.origin + '/api/v1/auth/yandex/callback');
+    const authUrl = `https://oauth.yandex.ru/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}`;
+    window.location.href = authUrl;
   };
 
   return (

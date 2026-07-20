@@ -1,13 +1,13 @@
 export type TransactionType = 'income' | 'expense' | 'transfer';
-export type AccountType = 'cash' | 'debit' | 'credit' | 'savings';
+export type AccountType = 'cash' | 'card' | 'deposit';
 export type Currency = 'RUB' | 'USD' | 'EUR';
-export type Periodicity = 'daily' | 'weekly' | 'monthly' | 'yearly';
+export type Periodicity = 'daily' | 'weekly' | 'monthly';
 
 export interface User {
   id: string;
   name: string;
-  email?: string;
-  createdAt: string;
+  email: string;
+  avatarUrl: string;
 }
 
 export interface Account {
@@ -16,15 +16,19 @@ export interface Account {
   type: AccountType;
   currency: Currency;
   balance: number;
-  archived: boolean;
+  initialBalance: number;
+  isArchived: boolean;
+  createdAt: string;
 }
 
 export interface Category {
   id: string;
   name: string;
-  emoji: string;
+  type: 'income' | 'expense';
   color: string;
-  type: TransactionType;
+  icon: string;
+  isDefault: boolean;
+  createdAt: string;
 }
 
 export interface Transaction {
@@ -32,33 +36,95 @@ export interface Transaction {
   type: TransactionType;
   amount: number;
   accountId: string;
-  targetAccountId?: string;
-  categoryId?: string;
+  toAccountId?: string;
+  categoryId: string;
   date: string;
-  note?: string;
+  comment: string;
+  createdAt: string;
 }
 
-export interface Budget {
+export interface MonthlyBudget {
+  id: string;
+  month: string;
+  plannedAmount: number;
+  actualAmount: number;
+  usagePercent: number;
+  remainingAmount: number;
+  safeDailyAmount: number;
+  updatedAt: string;
+}
+
+export interface CategoryLimit {
   id: string;
   categoryId: string;
+  month: string;
   limit: number;
+  spent: number;
+  remaining: number;
+  usagePercent: number;
+  isExceeded: boolean;
+  updatedAt: string;
+}
+
+export interface SafeDailyAmount {
+  month: string;
+  safeDailyAmount: number;
+  remainingDays: number;
 }
 
 export interface Goal {
   id: string;
-  name: string;
-  target: number;
-  current: number;
+  title: string;
+  targetAmount: number;
+  currentAmount: number;
+  progress: number;
   deadline: string;
+  status: 'active' | 'completed' | 'failed';
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface RecurringPayment {
   id: string;
-  categoryId: string;
+  type: TransactionType;
   amount: number;
-  periodicity: string;
+  accountId: string;
+  toAccountId?: string;
+  categoryId: string;
+  periodicity: Periodicity;
   nextDate: string;
-  note?: string;
+  comment: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface DashboardData {
+  totalBalance: number;
+  monthlyIncome: number;
+  monthlyExpense: number;
+  budgetRemaining: number;
+  safeDailyAmount: number;
+  topCategories: CategoryStatItem[];
+  upcomingRecurring: RecurringPayment[];
+}
+
+export interface CategoryStatItem {
+  categoryId: string;
+  name: string;
+  amount: number;
+  percent: number;
+}
+
+export interface DailyStatItem {
+  date: string;
+  amount: number;
+}
+
+export interface IncomeExpenseComparison {
+  month: string;
+  income: number;
+  expense: number;
+  saving: number;
 }
 
 export type TimePeriod = 'day' | 'week' | 'month' | 'year' | 'period';

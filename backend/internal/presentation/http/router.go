@@ -46,6 +46,7 @@ func NewRouter(sessionService service.SessionService, handlers *Handlers) http.H
 	protected.HandleFunc("/accounts/{id}/archive", handlers.Account.ArchiveAccount).Methods(http.MethodPatch, http.MethodOptions)
 
 	protected.HandleFunc("/categories", handlers.Category.GetCategories).Methods(http.MethodGet, http.MethodOptions)
+	protected.HandleFunc("/categories", handlers.Category.CreateCategory).Methods(http.MethodPost, http.MethodOptions)
 	protected.HandleFunc("/categories/{id}", handlers.Category.UpdateCategory).Methods(http.MethodPatch, http.MethodOptions)
 
 	protected.HandleFunc("/transactions", handlers.Transaction.CreateTransaction).Methods(http.MethodPost, http.MethodOptions)

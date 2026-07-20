@@ -1,3 +1,5 @@
+import type { Account, Transaction } from '@/types';
+
 export function formatMoney(amount: number, currency: string = 'RUB'): string {
   const symbols: Record<string, string> = { RUB: '₽', USD: '$', EUR: '€' };
   const symbol = symbols[currency] || currency;
@@ -20,39 +22,25 @@ export function getDaysLeftInMonth(): number {
   return Math.max(1, Math.ceil((endOfMonth.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
 }
 
-export function getTotalBalance(accounts: { balance: number; archived?: boolean }[]): number {
-  return accounts.filter((a) => !a.archived).reduce((sum, a) => sum + a.balance, 0);
+export function getTotalBalance(accounts: Account[]): number {
+  return accounts.filter((a) => !a.isArchived).reduce((sum, a) => sum + a.balance, 0);
 }
 
-export function getTotalByType(transactions: { type: string; amount: number }[], type: string): number {
+export function getTotalByType(transactions: Transaction[], type: string): number {
   return transactions.filter((t) => t.type === type).reduce((sum, t) => sum + t.amount, 0);
 }
 
-export function getSafePerDay(budget: number, spent: number): number {
-  const remaining = Math.max(0, budget - spent);
-  const daysLeft = getDaysLeftInMonth();
-  return Math.round(remaining / daysLeft);
+export function getCurrentMonth(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 }
 
-export function groupTransactionsByDate(transactions: { date: string }[]): Record<string, typeof transactions> {
-  const groups: Record<string, typeof transactions> = {};
+export function groupTransactionsByDate(transactions: Transaction[]): Record<string, Transaction[]> {
+  const groups: Record<string, Transaction[]> = {};
   transactions.forEach((tx) => {
     const date = tx.date.split('T')[0];
     if (!groups[date]) groups[date] = [];
     groups[date].push(tx);
   });
   return groups;
-}
-
-export function getExpensesByCategory(
-  transactions: { type: string; categoryId?: string; amount: number }[],
-  categories: { id: string }[]
-): { categoryId: string; amount: number }[] {
-  const map: Record<string, number> = {};
-  transactions.filter((t) => t.type === 'expense' && t.categoryId).forEach((t) => {
-    if (t.categoryId) {
-      map[t.categoryId] = (map[t.categoryId] || 0) + t.amount;
-    }
-  });
-  return Object.entries(map).map(([categoryId, amount]) => ({ categoryId, amount }));
 }
