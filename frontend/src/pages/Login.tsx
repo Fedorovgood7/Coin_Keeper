@@ -24,7 +24,7 @@ export default function Login() {
 
   const handleLogin = () => {
     const clientId = 'f5bdc1e4c2494499b66592bd9fa7ee43';
-    const redirectUri = encodeURIComponent(window.location.origin + '/api/v1/auth/yandex/callback');
+    const redirectUri = encodeURIComponent(window.location.origin + '/login');
     const authUrl = `https://oauth.yandex.ru/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}`;
     window.location.href = authUrl;
   };
