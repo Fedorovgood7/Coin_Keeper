@@ -65,7 +65,6 @@ CREATE INDEX idx_transactions_user_id ON transactions(user_id);
 CREATE INDEX idx_transactions_user_id_date ON transactions(user_id, date DESC);
 CREATE INDEX idx_transactions_account_id ON transactions(account_id);
 CREATE INDEX idx_transactions_category_id ON transactions(category_id);
-CREATE INDEX idx_transactions_user_id_month ON transactions(user_id, date_trunc('month', date));
 CREATE INDEX idx_transactions_recurring_id ON transactions(recurring_id);
 
 -- Monthly budgets table
