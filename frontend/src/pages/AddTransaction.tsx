@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from '@/store';
 import { formatMoney } from '@/utils';
+import { hapticFeedback } from '@/utils/telegram';
 
 export default function AddTransaction() {
   const navigate = useNavigate();
