@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from '@/store';
 
@@ -7,6 +7,8 @@ export default function Login() {
   const [searchParams] = useSearchParams();
   const login = useStore((state) => state.login);
   const user = useStore((state) => state.user);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -16,9 +18,14 @@ export default function Login() {
 
     const code = searchParams.get('code');
     if (code) {
+      setLoading(true);
+      setError(null);
       login(code)
         .then(() => navigate('/'))
-        .catch(() => {});
+        .catch((e) => {
+          setError('Ошибка входа: ' + (e as Error).message);
+          setLoading(false);
+        });
     }
   }, [user, searchParams]);
 
@@ -37,8 +44,13 @@ export default function Login() {
         <p className="login-subtitle">
           Контролируйте свои финансы — учитывайте расходы, планируйте бюджет, достигайте целей
         </p>
-        <button className="btn btn-primary login-btn" onClick={handleLogin}>
-          Войти через Yandex ID
+        {error && (
+          <div style={{ color: 'var(--danger)', marginBottom: 16, fontSize: 13 }}>
+            {error}
+          </div>
+        )}
+        <button className="btn login-btn" onClick={handleLogin} disabled={loading}>
+          {loading ? 'Вход...' : 'Войти через Yandex ID'}
         </button>
       </div>
       <div className="login-right">
