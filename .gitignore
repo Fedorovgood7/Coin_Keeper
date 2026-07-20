@@ -1,4 +1,4 @@
-# Environment variables
+# Environment
 .env
 .env.local
 .env.*.local
@@ -14,12 +14,6 @@ build/
 *.dll
 *.so
 *.dylib
-backend/app
-
-# Test outputs
-coverage/
-*.test
-*.out
 
 # IDE
 .vscode/
@@ -27,7 +21,10 @@ coverage/
 *.swp
 *.swo
 *~
+
+# OS
 .DS_Store
+Thumbs.db
 
 # Logs
 *.log
@@ -36,7 +33,9 @@ logs/
 # Docker
 .docker/
 
-# Temporary files
-*.tmp
-*.bak
-*.cache
+# Go
+backend/app
+backend/server
+
+# TypeScript
+*.tsbuildinfo
