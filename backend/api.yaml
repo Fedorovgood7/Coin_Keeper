@@ -1,0 +1,709 @@
+openapi: 3.0.3
+info:
+  title: CoinKeeper API
+  description: REST API для приложения учёта личных финансов CoinKeeper
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development
+
+security:
+  - BearerAuth: []
+
+paths:
+  /auth/yandex:
+    post:
+      summary: Вход через Yandex ID
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code:
+                  type: string
+      responses:
+        '200':
+          description: Успешная авторизация
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+  /auth/me:
+    get:
+      summary: Получить текущий профиль
+      tags: [Auth]
+      responses:
+        '200':
+          description: Профиль пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /auth/logout:
+    post:
+      summary: Выход из системы
+      tags: [Auth]
+      responses:
+        '200':
+          description: Успешный выход
+
+  /accounts:
+    get:
+      summary: Список счетов
+      tags: [Accounts]
+      responses:
+        '200':
+          description: Список счетов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Account'
+    post:
+      summary: Создать счёт
+      tags: [Accounts]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAccountRequest'
+      responses:
+        '200':
+          description: Счёт создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+
+  /accounts/{id}:
+    patch:
+      summary: Обновить счёт
+      tags: [Accounts]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        '200':
+          description: Счёт обновлён
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+
+  /accounts/{id}/archive:
+    patch:
+      summary: Архивировать счёт
+      tags: [Accounts]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Счёт архивирован
+
+  /categories:
+    get:
+      summary: Список категорий
+      tags: [Categories]
+      responses:
+        '200':
+          description: Список категорий
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+    post:
+      summary: Создать категорию
+      tags: [Categories]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCategoryRequest'
+      responses:
+        '200':
+          description: Категория создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+
+  /categories/{id}:
+    patch:
+      summary: Обновить категорию
+      tags: [Categories]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                color:
+                  type: string
+                icon:
+                  type: string
+      responses:
+        '200':
+          description: Категория обновлена
+
+  /transactions:
+    get:
+      summary: Список операций
+      tags: [Transactions]
+      parameters:
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: account_id
+          in: query
+          schema:
+            type: string
+        - name: category_id
+          in: query
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [income, expense, transfer]
+      responses:
+        '200':
+          description: Список операций
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transaction'
+    post:
+      summary: Создать операцию
+      tags: [Transactions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTransactionRequest'
+      responses:
+        '200':
+          description: Операция создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+
+  /transactions/{id}:
+    patch:
+      summary: Обновить операцию
+      tags: [Transactions]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Операция обновлена
+    delete:
+      summary: Удалить операцию
+      tags: [Transactions]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Операция удалена
+
+  /budget/monthly:
+    get:
+      summary: Месячный бюджет
+      tags: [Budget]
+      parameters:
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{4}-\d{2}$'
+      responses:
+        '200':
+          description: Месячный бюджет
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonthlyBudget'
+
+  /budget/category-limit:
+    post:
+      summary: Установить лимит по категории
+      tags: [Budget]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [category_id, month, limit]
+              properties:
+                category_id:
+                  type: string
+                month:
+                  type: string
+                  pattern: '^\d{4}-\d{2}$'
+                limit:
+                  type: number
+      responses:
+        '200':
+          description: Лимит установлен
+
+  /budget/safe-daily-amount:
+    get:
+      summary: Безопасная сумма в день
+      tags: [Budget]
+      parameters:
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Безопасная сумма
+
+  /dashboard:
+    get:
+      summary: Данные дашборда
+      tags: [Dashboard]
+      responses:
+        '200':
+          description: Данные дашборда
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dashboard'
+
+  /analytics/categories:
+    get:
+      summary: Расходы по категориям
+      tags: [Analytics]
+      parameters:
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Статистика по категориям
+
+  /analytics/daily:
+    get:
+      summary: Расходы по дням
+      tags: [Analytics]
+      parameters:
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Статистика по дням
+
+  /analytics/comparison:
+    get:
+      summary: Сравнение доходов и расходов
+      tags: [Analytics]
+      parameters:
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Сравнение доходов и расходов
+
+  /goals:
+    get:
+      summary: Список целей
+      tags: [Goals]
+      responses:
+        '200':
+          description: Список целей
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Goal'
+    post:
+      summary: Создать цель
+      tags: [Goals]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGoalRequest'
+      responses:
+        '200':
+          description: Цель создана
+
+  /goals/{id}/topup:
+    post:
+      summary: Пополнить цель
+      tags: [Goals]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount, account_id]
+              properties:
+                amount:
+                  type: number
+                account_id:
+                  type: string
+      responses:
+        '200':
+          description: Цель пополнена
+
+  /recurring:
+    get:
+      summary: Список регулярных платежей
+      tags: [Recurring]
+      responses:
+        '200':
+          description: Список регулярных платежей
+    post:
+      summary: Создать регулярный платёж
+      tags: [Recurring]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRecurringRequest'
+      responses:
+        '200':
+          description: Регулярный платёж создан
+
+  /recurring/generate:
+    post:
+      summary: Генерация операций по регулярным платежам
+      tags: [Recurring]
+      responses:
+        '200':
+          description: Операции сгенерированы
+
+  /export/csv:
+    get:
+      summary: Экспорт операций в CSV
+      tags: [Export]
+      parameters:
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: CSV файл
+          content:
+            text/csv:
+              schema:
+                type: string
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        avatar_url:
+          type: string
+
+    Account:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum: [cash, card, deposit]
+        currency:
+          type: string
+          enum: [RUB, USD, EUR]
+        balance:
+          type: number
+        initial_balance:
+          type: number
+        is_archived:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    CreateAccountRequest:
+      type: object
+      required: [name, type, currency]
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [cash, card, deposit]
+        currency:
+          type: string
+          enum: [RUB, USD, EUR]
+        initial_balance:
+          type: number
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum: [income, expense]
+        color:
+          type: string
+        icon:
+          type: string
+        is_default:
+          type: boolean
+
+    CreateCategoryRequest:
+      type: object
+      required: [name, type]
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [income, expense]
+        color:
+          type: string
+        icon:
+          type: string
+
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [income, expense, transfer]
+        amount:
+          type: number
+        account_id:
+          type: string
+        to_account_id:
+          type: string
+        category_id:
+          type: string
+        date:
+          type: string
+          format: date-time
+        comment:
+          type: string
+
+    CreateTransactionRequest:
+      type: object
+      required: [type, amount, account_id, category_id, date]
+      properties:
+        type:
+          type: string
+          enum: [income, expense, transfer]
+        amount:
+          type: number
+        account_id:
+          type: string
+        to_account_id:
+          type: string
+        category_id:
+          type: string
+        date:
+          type: string
+          format: date-time
+        comment:
+          type: string
+
+    MonthlyBudget:
+      type: object
+      properties:
+        id:
+          type: string
+        month:
+          type: string
+        planned_amount:
+          type: number
+        actual_amount:
+          type: number
+        usage_percent:
+          type: number
+        remaining_amount:
+          type: number
+        safe_daily_amount:
+          type: number
+
+    Dashboard:
+      type: object
+      properties:
+        total_balance:
+          type: number
+        monthly_income:
+          type: number
+        monthly_expense:
+          type: number
+        budget_remaining:
+          type: number
+        safe_daily_amount:
+          type: number
+        top_categories:
+          type: array
+          items:
+            type: object
+        upcoming_recurring:
+          type: array
+          items:
+            type: object
+
+    Goal:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        target_amount:
+          type: number
+        current_amount:
+          type: number
+        progress:
+          type: number
+        deadline:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [active, completed, failed]
+
+    CreateGoalRequest:
+      type: object
+      required: [title, target_amount, deadline]
+      properties:
+        title:
+          type: string
+        target_amount:
+          type: number
+        deadline:
+          type: string
+          format: date-time
+
+    CreateRecurringRequest:
+      type: object
+      required: [type, amount, account_id, category_id, periodicity, next_date]
+      properties:
+        type:
+          type: string
+          enum: [income, expense, transfer]
+        amount:
+          type: number
+        account_id:
+          type: string
+        to_account_id:
+          type: string
+        category_id:
+          type: string
+        periodicity:
+          type: string
+          enum: [daily, weekly, monthly]
+        next_date:
+          type: string
+          format: date-time
+        comment:
+          type: string

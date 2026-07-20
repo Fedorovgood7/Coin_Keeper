@@ -14,15 +14,18 @@ import (
 
 type CategoryHandler struct {
 	getCategoriesUC  *category.GetCategoriesUseCase
+	createCategoryUC *category.CreateCategoryUseCase
 	updateCategoryUC *category.UpdateCategoryUseCase
 }
 
 func NewCategoryHandler(
 	getUC *category.GetCategoriesUseCase,
+	createUC *category.CreateCategoryUseCase,
 	updateUC *category.UpdateCategoryUseCase,
 ) *CategoryHandler {
 	return &CategoryHandler{
 		getCategoriesUC:  getUC,
+		createCategoryUC: createUC,
 		updateCategoryUC: updateUC,
 	}
 }
@@ -31,6 +34,24 @@ func (h *CategoryHandler) GetCategories(w http.ResponseWriter, r *http.Request) 
 	userID := middleware.GetUserID(r.Context())
 
 	result, err := h.getCategoriesUC.Execute(r.Context(), userID)
+	if err != nil {
+		response.HandleDomainError(w, err)
+		return
+	}
+
+	response.OK(w, result)
+}
+
+func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request) {
+	userID := middleware.GetUserID(r.Context())
+
+	var req dto.CreateCategoryRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.BadRequest(w, "Invalid request body")
+		return
+	}
+
+	result, err := h.createCategoryUC.Execute(r.Context(), userID, req)
 	if err != nil {
 		response.HandleDomainError(w, err)
 		return

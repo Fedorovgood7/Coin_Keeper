@@ -1,27 +1,31 @@
+import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '@/store';
-import { formatMoney, getTotalBalance, getTotalByType, getSafePerDay } from '@/utils';
+import { formatMoney, getCurrentMonth } from '@/utils';
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { user, accounts, transactions, budgets, recurring, categories, logout } = useStore();
+  const { dashboard, recurring, categories, loadDashboard, loadRecurring, loadCategories } = useStore();
 
-  const totalBalance = getTotalBalance(accounts);
-  const now = new Date();
-  const monthTx = transactions.filter((t) => {
-    const d = new Date(t.date);
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  });
-  const monthIncome = getTotalByType(monthTx, 'income');
-  const monthExpense = getTotalByType(monthTx, 'expense');
+  useEffect(() => {
+    loadDashboard();
+    loadRecurring();
+    loadCategories();
+  }, []);
 
-  const totalBudget = budgets.reduce((s, b) => s + b.limit, 0);
-  const totalSpent = transactions.filter((t) => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-  const budgetPercent = totalBudget > 0 ? Math.min(100, Math.round((totalSpent / totalBudget) * 100)) : 0;
-  const remaining = Math.max(0, totalBudget - totalSpent);
-  const safeDaily = getSafePerDay(totalBudget, monthExpense);
+  if (!dashboard) {
+    return (
+      <div className="page-wrapper">
+        <div className="container">
+          <div className="empty-state">
+            <div>Загрузка...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const upcomingRecurring = recurring.slice(0, 6);
+  const upcomingRecurring = dashboard.upcomingRecurring.slice(0, 6);
 
   return (
     <div className="page-wrapper">
@@ -54,7 +58,7 @@ export default function Dashboard() {
           <div>
             <div className="balance-label">Общий баланс</div>
             <div className="balance-amount">
-              {new Intl.NumberFormat('ru-RU').format(totalBalance)}{' '}
+              {new Intl.NumberFormat('ru-RU').format(dashboard.totalBalance)}{' '}
               <span className="balance-currency">₽</span>
             </div>
           </div>
@@ -83,52 +87,64 @@ export default function Dashboard() {
         <div className="stats-row">
           <div className="stat-card">
             <div className="stat-label">Доходы за месяц</div>
-            <div className="stat-value income">{formatMoney(monthIncome)}</div>
+            <div className="stat-value income">{formatMoney(dashboard.monthlyIncome)}</div>
           </div>
           <div className="stat-card">
             <div className="stat-label">Расходы за месяц</div>
-            <div className="stat-value expense">{formatMoney(monthExpense)}</div>
+            <div className="stat-value expense">{formatMoney(dashboard.monthlyExpense)}</div>
           </div>
           <div className="stat-card">
             <div className="stat-label">Безопасно в день</div>
             <div className="stat-value" style={{ color: 'var(--success)' }}>
-              {formatMoney(safeDaily)}
+              {formatMoney(dashboard.safeDailyAmount)}
             </div>
           </div>
           <div className="stat-card">
             <div className="stat-label">Остаток бюджета</div>
-            <div className="stat-value">{formatMoney(remaining)}</div>
+            <div className="stat-value">{formatMoney(dashboard.budgetRemaining)}</div>
           </div>
         </div>
 
         <div className="safe-to-spend">
           <div className="safe-label">Безопасно потратить в день</div>
-          <div className="safe-amount">{formatMoney(safeDaily)}</div>
+          <div className="safe-amount">{formatMoney(dashboard.safeDailyAmount)}</div>
           <div className="safe-subtitle">до конца месяца</div>
         </div>
 
-        <div className="budget-mini">
-          <div className="budget-mini-header">
-            <span className="budget-mini-title">Бюджет (общий)</span>
-            <span className="budget-mini-value">
-              {formatMoney(totalSpent)} / {formatMoney(totalBudget)}
-            </span>
-          </div>
-          <div className="progress-bar">
-            <div
-              className={`progress-fill ${budgetPercent >= 90 ? 'danger' : budgetPercent >= 70 ? 'warning' : ''}`}
-              style={{ width: budgetPercent + '%' }}
-            ></div>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
-            <span style={{ fontSize: 11, color: 'var(--muted)' }}>{budgetPercent}% использовано</span>
-            <Link to="/budget" className="section-link">
-              Подробнее →
-            </Link>
-          </div>
-        </div>
-
         <div className="section-title">
+          <span>Топ категории</span>
+          <Link to="/analytics" className="section-link">
+            Аналитика →
+          </Link>
+        </div>
+        {dashboard.topCategories.length === 0 ? (
+          <div className="empty-state" style={{ padding: 24 }}>
+            <div style={{ fontSize: 13, color: 'var(--muted)' }}>Нет данных</div>
+          </div>
+        ) : (
+          dashboard.topCategories.slice(0, 5).map((cat) => (
+            <div className="card" key={cat.categoryId} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div
+                className="icon-circle"
+                style={{ background: 'var(--border)', width: 40, height: 40, fontSize: 18 }}
+              >
+                📦
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 600 }}>{cat.name}</div>
+                <div className="progress-bar" style={{ margin: '8px 0' }}>
+                  <div className="progress-fill" style={{ width: `${cat.percent}%` }}></div>
+                </div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: 14, fontWeight: 700 }}>{formatMoney(cat.amount)}</div>
+                <div style={{ fontSize: 12, color: 'var(--muted)' }}>{Math.round(cat.percent)}%</div>
+              </div>
+            </div>
+          ))
+        )}
+
+        <div className="section-title" style={{ marginTop: 24 }}>
           <span>Регулярные платежи</span>
           <Link to="/budget" className="section-link">
             Все →
@@ -146,9 +162,9 @@ export default function Dashboard() {
               const dateStr = nextDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
               return (
                 <div className="recurring-item" key={r.id}>
-                  <div className="recurring-icon">{cat?.emoji || '🔄'}</div>
+                  <div className="recurring-icon">{cat?.icon || '🔄'}</div>
                   <div className="recurring-info">
-                    <div className="recurring-name">{r.note || cat?.name || 'Платёж'}</div>
+                    <div className="recurring-name">{r.comment || cat?.name || 'Платёж'}</div>
                     <div className="recurring-date">
                       {dateStr} · {r.periodicity}
                     </div>

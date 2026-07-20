@@ -1,114 +1,98 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStore } from '@/store';
-import { formatMoney, getSafePerDay } from '@/utils';
+import { formatMoney, getCurrentMonth } from '@/utils';
 
 export default function Budget() {
   const {
-    transactions,
-    budgets,
+    monthlyBudget,
+    categoryLimits,
     goals,
     categories,
     accounts,
-    addBudget,
-    updateBudget,
-    deleteBudget,
-    addGoal,
-    updateGoal,
-    contributeToGoal,
+    loadBudget,
+    loadCategories,
+    loadAccounts,
+    loadGoals,
+    setCategoryLimit,
+    createGoal,
+    topupGoal,
   } = useStore();
 
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [showContributeModal, setShowContributeModal] = useState(false);
-  const [editingLimitId, setEditingLimitId] = useState<string | null>(null);
-  const [editingGoalId, setEditingGoalId] = useState<string | null>(null);
   const [limitCategoryId, setLimitCategoryId] = useState('');
   const [limitAmount, setLimitAmount] = useState('');
-  const [goalName, setGoalName] = useState('');
+  const [goalTitle, setGoalTitle] = useState('');
   const [goalTarget, setGoalTarget] = useState('');
   const [goalDeadline, setGoalDeadline] = useState('');
   const [contributeAmount, setContributeAmount] = useState('');
-  const [contributeFromAccount, setContributeFromAccount] = useState(accounts[0]?.id || '');
+  const [contributeFromAccount, setContributeFromAccount] = useState('');
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
 
-  const totalBudget = budgets.reduce((s, b) => s + b.limit, 0);
-  const totalSpent = transactions.filter((t) => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-  const budgetPercent = totalBudget > 0 ? Math.min(100, Math.round((totalSpent / totalBudget) * 100)) : 0;
-  const remaining = Math.max(0, totalBudget - totalSpent);
-  const safeDaily = getSafePerDay(totalBudget, totalSpent);
-  const daysLeft = Math.max(1, new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate() - new Date().getDate());
+  const month = getCurrentMonth();
+
+  useEffect(() => {
+    loadBudget(month);
+    loadCategories();
+    loadAccounts();
+    loadGoals();
+  }, []);
+
+  useEffect(() => {
+    if (accounts.length > 0 && !contributeFromAccount) {
+      setContributeFromAccount(accounts[0].id);
+    }
+  }, [accounts]);
 
   const openLimitModal = (categoryId?: string) => {
     if (categoryId) {
-      const budget = budgets.find((b) => b.categoryId === categoryId);
-      setEditingLimitId(categoryId);
+      const limit = categoryLimits.find((l) => l.categoryId === categoryId);
       setLimitCategoryId(categoryId);
-      setLimitAmount(budget?.limit.toString() || '');
+      setLimitAmount(limit?.limit.toString() || '');
     } else {
-      setEditingLimitId(null);
       setLimitCategoryId('');
       setLimitAmount('');
     }
     setShowLimitModal(true);
   };
 
-  const handleSaveLimit = () => {
+  const handleSaveLimit = async () => {
     if (!limitCategoryId || !limitAmount) return;
-    if (editingLimitId) {
-      updateBudget(editingLimitId, { categoryId: limitCategoryId, limit: parseFloat(limitAmount) });
-    } else {
-      addBudget({ categoryId: limitCategoryId, limit: parseFloat(limitAmount) });
-    }
+    await setCategoryLimit(limitCategoryId, month, parseFloat(limitAmount));
     setShowLimitModal(false);
   };
 
-  const openGoalModal = (goalId?: string) => {
-    if (goalId) {
-      const goal = goals.find((g) => g.id === goalId);
-      setEditingGoalId(goalId);
-      setGoalName(goal?.name || '');
-      setGoalTarget(goal?.target.toString() || '');
-      setGoalDeadline(goal?.deadline || '');
-    } else {
-      setEditingGoalId(null);
-      setGoalName('');
-      setGoalTarget('');
-      setGoalDeadline('');
-    }
+  const openGoalModal = () => {
+    setGoalTitle('');
+    setGoalTarget('');
+    setGoalDeadline('');
     setShowGoalModal(true);
   };
 
-  const handleSaveGoal = () => {
-    if (!goalName || !goalTarget) return;
-    if (editingGoalId) {
-      updateGoal(editingGoalId, {
-        name: goalName,
-        target: parseFloat(goalTarget),
-        deadline: goalDeadline,
-      });
-    } else {
-      addGoal({
-        name: goalName,
-        target: parseFloat(goalTarget),
-        current: 0,
-        deadline: goalDeadline,
-      });
-    }
+  const handleSaveGoal = async () => {
+    if (!goalTitle || !goalTarget) return;
+    await createGoal({
+      title: goalTitle,
+      targetAmount: parseFloat(goalTarget),
+      deadline: new Date(goalDeadline).toISOString(),
+    });
     setShowGoalModal(false);
   };
 
   const openContributeModal = (goalId: string) => {
     setSelectedGoalId(goalId);
     setContributeAmount('');
-    setContributeFromAccount(accounts[0]?.id || '');
     setShowContributeModal(true);
   };
 
-  const handleContribute = () => {
+  const handleContribute = async () => {
     if (!selectedGoalId || !contributeAmount || parseFloat(contributeAmount) <= 0) return;
-    contributeToGoal(selectedGoalId, parseFloat(contributeAmount), contributeFromAccount);
+    await topupGoal(selectedGoalId, parseFloat(contributeAmount), contributeFromAccount);
     setShowContributeModal(false);
   };
+
+  const expenseCategories = categories.filter((c) => c.type === 'expense');
 
   return (
     <div className="page-wrapper">
@@ -116,36 +100,40 @@ export default function Budget() {
         <div className="header">
           <h1>Бюджет</h1>
           <div className="toolbar">
-            <button className="toolbar-btn toolbar-btn-primary" onClick={() => openGoalModal()}>
+            <button className="toolbar-btn toolbar-btn-primary" onClick={openGoalModal}>
               + Цель
             </button>
           </div>
         </div>
 
-        <div className="card" style={{ textAlign: 'center', marginBottom: 24 }}>
-          <div className="card-title">Потрачено</div>
-          <div className="card-value negative">
-            {formatMoney(totalSpent)} <span style={{ fontSize: 16, color: 'var(--muted)' }}>/ {formatMoney(totalBudget)}</span>
-          </div>
-          <div className="progress-bar" style={{ marginTop: 16 }}>
-            <div
-              className={`progress-fill ${budgetPercent >= 90 ? 'danger' : budgetPercent >= 70 ? 'warning' : ''}`}
-              style={{ width: budgetPercent + '%' }}
-            ></div>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontSize: 12, color: 'var(--muted)' }}>
-            <span>{budgetPercent}% использовано</span>
-            <span>Осталось {formatMoney(remaining)}</span>
-          </div>
-        </div>
+        {monthlyBudget && (
+          <>
+            <div className="card" style={{ textAlign: 'center', marginBottom: 24 }}>
+              <div className="card-title">Потрачено</div>
+              <div className="card-value negative">
+                {formatMoney(monthlyBudget.actualAmount)} <span style={{ fontSize: 16, color: 'var(--muted)' }}>/ {formatMoney(monthlyBudget.plannedAmount)}</span>
+              </div>
+              <div className="progress-bar" style={{ marginTop: 16 }}>
+                <div
+                  className={`progress-fill ${monthlyBudget.usagePercent >= 90 ? 'danger' : monthlyBudget.usagePercent >= 70 ? 'warning' : ''}`}
+                  style={{ width: monthlyBudget.usagePercent + '%' }}
+                ></div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontSize: 12, color: 'var(--muted)' }}>
+                <span>{Math.round(monthlyBudget.usagePercent)}% использовано</span>
+                <span>Осталось {formatMoney(monthlyBudget.remainingAmount)}</span>
+              </div>
+            </div>
 
-        <div className="safe-to-spend" style={{ marginBottom: 24 }}>
-          <div className="safe-label">Безопасно тратить в день</div>
-          <div className="safe-amount">{formatMoney(safeDaily)}</div>
-          <div className="safe-subtitle">
-            {formatMoney(remaining)} ÷ {daysLeft} дней
-          </div>
-        </div>
+            <div className="safe-to-spend" style={{ marginBottom: 24 }}>
+              <div className="safe-label">Безопасно тратить в день</div>
+              <div className="safe-amount">{formatMoney(monthlyBudget.safeDailyAmount)}</div>
+              <div className="safe-subtitle">
+                до конца месяца
+              </div>
+            </div>
+          </>
+        )}
 
         <div className="section-title">
           <span>Лимиты по категориям</span>
@@ -158,81 +146,92 @@ export default function Budget() {
           </button>
         </div>
 
-        {budgets.map((b) => {
-          const cat = categories.find((c) => c.id === b.categoryId);
-          const spent = transactions
-            .filter((t) => t.type === 'expense' && t.categoryId === b.categoryId)
-            .reduce((s, t) => s + t.amount, 0);
-          const percent = b.limit > 0 ? Math.min(100, Math.round((spent / b.limit) * 100)) : 0;
-          return (
-            <div className="card" key={b.id} style={{ cursor: 'pointer' }} onClick={() => openLimitModal(b.categoryId)}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-                <div className="icon-circle" style={{ background: cat?.color || 'var(--border)', width: 36, height: 36, fontSize: 16 }}>
-                  {cat?.emoji || '📦'}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600 }}>{cat?.name || 'Без категории'}</div>
-                  <div style={{ fontSize: 12, color: 'var(--muted)' }}>
-                    {formatMoney(spent)} из {formatMoney(b.limit)}
+        {categoryLimits.length === 0 ? (
+          <div className="empty-state" style={{ padding: 24 }}>
+            <div style={{ fontSize: 13, color: 'var(--muted)' }}>Нет лимитов</div>
+          </div>
+        ) : (
+          categoryLimits.map((limit) => {
+            const cat = categories.find((c) => c.id === limit.categoryId);
+            return (
+              <div className="card" key={limit.id} style={{ cursor: 'pointer' }} onClick={() => openLimitModal(limit.categoryId)}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                  <div className="icon-circle" style={{ background: cat?.color || 'var(--border)', width: 36, height: 36, fontSize: 16 }}>
+                    {cat?.icon || '📦'}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>{cat?.name || 'Без категории'}</div>
+                    <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+                      {formatMoney(limit.spent)} из {formatMoney(limit.limit)}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: limit.isExceeded ? 'var(--danger)' : limit.usagePercent >= 70 ? 'var(--accent-secondary)' : 'var(--success)' }}>
+                      {Math.round(limit.usagePercent)}%
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--muted)' }}>ост. {formatMoney(limit.remaining)}</div>
                   </div>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: percent >= 90 ? 'var(--danger)' : percent >= 70 ? 'var(--accent-secondary)' : 'var(--success)' }}>
-                    {percent}%
-                  </div>
-                  <div style={{ fontSize: 11, color: 'var(--muted)' }}>ост. {formatMoney(Math.max(0, b.limit - spent))}</div>
+                <div className="progress-bar">
+                  <div
+                    className={`progress-fill ${limit.isExceeded ? 'danger' : limit.usagePercent >= 70 ? 'warning' : ''}`}
+                    style={{ width: Math.min(limit.usagePercent, 100) + '%' }}
+                  ></div>
                 </div>
               </div>
-              <div className="progress-bar">
-                <div
-                  className={`progress-fill ${percent >= 90 ? 'danger' : percent >= 70 ? 'warning' : ''}`}
-                  style={{ width: percent + '%' }}
-                ></div>
-              </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
 
         <div className="section-title" style={{ marginTop: 24 }}>
           <span>Цели накоплений</span>
         </div>
 
-        {goals.map((g) => {
-          const percent = g.target > 0 ? Math.round((g.current / g.target) * 100) : 0;
-          const deadline = g.deadline ? new Date(g.deadline).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
-          return (
-            <div className="card" key={g.id}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-                <div className="icon-circle" style={{ background: '#4285f4', width: 40, height: 40, fontSize: 18 }}>
-                  🎯
+        {goals.length === 0 ? (
+          <div className="empty-state" style={{ padding: 24 }}>
+            <div style={{ fontSize: 13, color: 'var(--muted)' }}>Нет целей</div>
+          </div>
+        ) : (
+          goals.map((g) => {
+            const deadline = g.deadline ? new Date(g.deadline).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+            return (
+              <div className="card" key={g.id}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                  <div className="icon-circle" style={{ background: '#4285f4', width: 40, height: 40, fontSize: 18 }}>
+                    🎯
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>{g.title}</div>
+                    {deadline && <div style={{ fontSize: 11, color: 'var(--muted)' }}>до {deadline}</div>}
+                  </div>
+                  <span className={`badge ${g.status === 'completed' ? 'badge-success' : g.status === 'failed' ? 'badge-danger' : 'badge-warning'}`}>
+                    {g.status === 'completed' ? 'Достигнута' : g.status === 'failed' ? 'Просрочена' : 'В процессе'}
+                  </span>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600 }}>{g.name}</div>
-                  {deadline && <div style={{ fontSize: 11, color: 'var(--muted)' }}>до {deadline}</div>}
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <div style={{ fontSize: 20, fontWeight: 700 }}>{formatMoney(g.currentAmount)}</div>
+                  <div style={{ fontSize: 14, color: 'var(--muted)' }}>/ {formatMoney(g.targetAmount)}</div>
                 </div>
-                <span className="badge badge-success">В процессе</span>
+                <div className="progress-bar">
+                  <div className="progress-fill" style={{ width: g.progress + '%' }}></div>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontSize: 12 }}>
+                  <span style={{ fontWeight: 600 }}>{Math.round(g.progress)}%</span>
+                  <span style={{ color: 'var(--muted)' }}>осталось {formatMoney(g.targetAmount - g.currentAmount)}</span>
+                </div>
+                {g.status !== 'completed' && (
+                  <button
+                    className="btn btn-primary"
+                    style={{ width: '100%', marginTop: 12 }}
+                    onClick={() => openContributeModal(g.id)}
+                  >
+                    Пополнить
+                  </button>
+                )}
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                <div style={{ fontSize: 20, fontWeight: 700 }}>{formatMoney(g.current)}</div>
-                <div style={{ fontSize: 14, color: 'var(--muted)' }}>/ {formatMoney(g.target)}</div>
-              </div>
-              <div className="progress-bar">
-                <div className="progress-fill" style={{ width: percent + '%' }}></div>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontSize: 12 }}>
-                <span style={{ fontWeight: 600 }}>{percent}%</span>
-                <span style={{ color: 'var(--muted)' }}>осталось {formatMoney(g.target - g.current)}</span>
-              </div>
-              <button
-                className="btn btn-primary"
-                style={{ width: '100%', marginTop: 12 }}
-                onClick={() => openContributeModal(g.id)}
-              >
-                Пополнить
-              </button>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
 
         <div className="bottom-spacer"></div>
       </div>
@@ -241,7 +240,7 @@ export default function Budget() {
         <div className="modal active" onClick={() => setShowLimitModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <div className="modal-title">{editingLimitId ? 'Изменить лимит' : 'Новый лимит'}</div>
+              <div className="modal-title">Лимит по категории</div>
               <button className="modal-close" onClick={() => setShowLimitModal(false)}>
                 
               </button>
@@ -252,16 +251,13 @@ export default function Budget() {
                 className="form-input"
                 value={limitCategoryId}
                 onChange={(e) => setLimitCategoryId(e.target.value)}
-                disabled={!!editingLimitId}
               >
                 <option value="">Выберите категорию</option>
-                {categories
-                  .filter((c) => c.type === 'expense' && (!editingLimitId || budgets.some((b) => b.categoryId === c.id)))
-                  .map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.emoji} {cat.name}
-                    </option>
-                  ))}
+                {expenseCategories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.icon} {cat.name}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="form-group">
@@ -274,22 +270,9 @@ export default function Budget() {
                 placeholder="0"
               />
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              {editingLimitId && (
-                <button
-                  className="btn btn-danger"
-                  onClick={() => {
-                    deleteBudget(editingLimitId);
-                    setShowLimitModal(false);
-                  }}
-                >
-                  Удалить
-                </button>
-              )}
-              <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleSaveLimit}>
-                {editingLimitId ? 'Сохранить' : 'Добавить'}
-              </button>
-            </div>
+            <button className="btn btn-primary" style={{ width: '100%' }} onClick={handleSaveLimit}>
+              Сохранить
+            </button>
           </div>
         </div>
       )}
@@ -298,7 +281,7 @@ export default function Budget() {
         <div className="modal active" onClick={() => setShowGoalModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <div className="modal-title">{editingGoalId ? 'Изменить цель' : 'Новая цель'}</div>
+              <div className="modal-title">Новая цель</div>
               <button className="modal-close" onClick={() => setShowGoalModal(false)}>
                 
               </button>
@@ -307,8 +290,8 @@ export default function Budget() {
               <label className="form-label">Название</label>
               <input
                 className="form-input"
-                value={goalName}
-                onChange={(e) => setGoalName(e.target.value)}
+                value={goalTitle}
+                onChange={(e) => setGoalTitle(e.target.value)}
                 placeholder="Например: Отпуск"
               />
             </div>
@@ -332,7 +315,7 @@ export default function Budget() {
               />
             </div>
             <button className="btn btn-primary" style={{ width: '100%' }} onClick={handleSaveGoal}>
-              {editingGoalId ? 'Сохранить' : 'Создать'}
+              Создать
             </button>
           </div>
         </div>
@@ -365,7 +348,7 @@ export default function Budget() {
                 onChange={(e) => setContributeFromAccount(e.target.value)}
               >
                 {accounts
-                  .filter((a) => !a.archived)
+                  .filter((a) => !a.isArchived)
                   .map((acc) => (
                     <option key={acc.id} value={acc.id}>
                       {acc.name} ({formatMoney(acc.balance)})

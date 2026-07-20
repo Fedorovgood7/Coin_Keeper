@@ -94,7 +94,7 @@ export function hideMainButton() {
   tg.MainButton.hide();
 }
 
-export function hapticFeedback(type: 'light' | 'medium' | 'heavy' | 'success' | 'error') {
+export function hapticFeedback(type: 'light' | 'medium' | 'heavy' | 'success' | 'warning' | 'error') {
   if (!tg?.HapticFeedback) return;
   
   if (type === 'success' || type === 'error' || type === 'warning') {

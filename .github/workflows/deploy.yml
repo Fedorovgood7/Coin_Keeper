@@ -1,0 +1,32 @@
+name: Deploy to Yandex Cloud
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Yandex Cloud
+        env:
+          YC_SA_KEY: ${{ secrets.YC_SA_KEY }}
+          YC_FOLDER_ID: ${{ secrets.YC_FOLDER_ID }}
+          YC_CLUSTER_ID: ${{ secrets.YC_CLUSTER_ID }}
+        run: |
+          echo "Deploying to Yandex Cloud..."
+          echo "Environment: ${{ github.event.inputs.environment }}"
+          echo "Add your deployment commands here"

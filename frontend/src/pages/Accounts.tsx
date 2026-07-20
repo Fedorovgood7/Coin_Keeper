@@ -1,22 +1,29 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStore } from '@/store';
 import { formatMoney } from '@/utils';
+import type { AccountType } from '@/types';
 
 export default function Accounts() {
-  const { accounts, addAccount, updateAccount, deleteAccount } = useStore();
+  const { accounts, loadAccounts, createAccount, updateAccount, archiveAccount } = useStore();
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState('');
-  const [type, setType] = useState<'cash' | 'debit' | 'credit' | 'savings'>('debit');
-  const [balance, setBalance] = useState('');
+  const [type, setType] = useState<AccountType>('card');
+  const [initialBalance, setInitialBalance] = useState('');
+  const [currency, setCurrency] = useState('RUB');
 
-  const totalBalance = accounts.filter((a) => !a.archived).reduce((s, a) => s + a.balance, 0);
+  useEffect(() => {
+    loadAccounts();
+  }, []);
+
+  const totalBalance = accounts.filter((a) => !a.isArchived).reduce((s, a) => s + a.balance, 0);
 
   const openCreate = () => {
     setEditingId(null);
     setName('');
-    setType('debit');
-    setBalance('');
+    setType('card');
+    setInitialBalance('');
+    setCurrency('RUB');
     setShowModal(true);
   };
 
@@ -26,28 +33,30 @@ export default function Accounts() {
     setEditingId(id);
     setName(acc.name);
     setType(acc.type);
-    setBalance(acc.balance.toString());
+    setInitialBalance(acc.initialBalance.toString());
+    setCurrency(acc.currency);
     setShowModal(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim()) return;
     if (editingId) {
-      updateAccount(editingId, {
-        name,
-        type,
-        balance: parseFloat(balance) || 0,
-      });
+      await updateAccount(editingId, name);
     } else {
-      addAccount({
+      await createAccount({
         name,
         type,
-        currency: 'RUB',
-        balance: parseFloat(balance) || 0,
-        archived: false,
+        currency,
+        initialBalance: parseFloat(initialBalance) || 0,
       });
     }
     setShowModal(false);
+  };
+
+  const handleArchive = async (id: string) => {
+    if (confirm('Архивировать счёт?')) {
+      await archiveAccount(id);
+    }
   };
 
   return (
@@ -68,7 +77,7 @@ export default function Accounts() {
         </div>
 
         {accounts
-          .filter((a) => !a.archived)
+          .filter((a) => !a.isArchived)
           .map((acc) => (
             <div
               className="list-item"
@@ -82,23 +91,21 @@ export default function Accounts() {
                   background:
                     acc.type === 'cash'
                       ? '#4caf50'
-                      : acc.type === 'savings'
+                      : acc.type === 'deposit'
                       ? '#26a69a'
                       : '#4285f4',
                 }}
               >
-                {acc.type === 'cash' ? '💵' : acc.type === 'savings' ? '' : '💳'}
+                {acc.type === 'cash' ? '💵' : acc.type === 'deposit' ? '' : '💳'}
               </div>
               <div className="list-item-content">
                 <div className="list-item-title">{acc.name}</div>
                 <div className="list-item-subtitle">
                   {acc.type === 'cash'
                     ? 'Наличные'
-                    : acc.type === 'debit'
-                    ? 'Дебетовая карта'
-                    : acc.type === 'credit'
-                    ? 'Кредитная карта'
-                    : 'Накопительный'}{' '}
+                    : acc.type === 'deposit'
+                    ? 'Накопительный'
+                    : 'Карта'}{' '}
                   · {acc.currency}
                 </div>
               </div>
@@ -106,14 +113,14 @@ export default function Accounts() {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (confirm('Удалить счёт?')) deleteAccount(acc.id);
+                  handleArchive(acc.id);
                 }}
                 style={{
                   background: 'none',
                   border: 'none',
                   fontSize: 18,
                   cursor: 'pointer',
-                  color: 'var(--danger)',
+                  color: 'var(--muted)',
                   padding: '4px 8px',
                 }}
               >
@@ -145,38 +152,54 @@ export default function Accounts() {
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Тип счёта</label>
-              <div className="grid-3">
-                {([
-                  { value: 'cash', label: 'Наличные', icon: '💵' },
-                  { value: 'debit', label: 'Карта', icon: '💳' },
-                  { value: 'credit', label: 'Кредит', icon: '💳' },
-                  { value: 'savings', label: 'Накопительный', icon: '🏦' },
-                ] as const).map((t) => (
-                  <button
-                    key={t.value}
-                    className={`btn ${type === t.value ? 'btn-primary' : 'btn-secondary'}`}
-                    onClick={() => setType(t.value)}
-                    style={{ padding: '12px 8px', fontSize: 12 }}
-                  >
-                    <div style={{ fontSize: 20 }}>{t.icon}</div>
-                    <div>{t.label}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
+            {!editingId && (
+              <>
+                <div className="form-group">
+                  <label className="form-label">Тип счёта</label>
+                  <div className="grid-3">
+                    {([
+                      { value: 'cash', label: 'Наличные', icon: '💵' },
+                      { value: 'card', label: 'Карта', icon: '💳' },
+                      { value: 'deposit', label: 'Накопительный', icon: '' },
+                    ] as const).map((t) => (
+                      <button
+                        key={t.value}
+                        className={`btn ${type === t.value ? 'btn-primary' : 'btn-secondary'}`}
+                        onClick={() => setType(t.value)}
+                        style={{ padding: '12px 8px', fontSize: 12 }}
+                      >
+                        <div style={{ fontSize: 20 }}>{t.icon}</div>
+                        <div>{t.label}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-            <div className="form-group">
-              <label className="form-label">Баланс</label>
-              <input
-                className="form-input"
-                type="number"
-                value={balance}
-                onChange={(e) => setBalance(e.target.value)}
-                placeholder="0"
-              />
-            </div>
+                <div className="form-group">
+                  <label className="form-label">Валюта</label>
+                  <select
+                    className="form-input"
+                    value={currency}
+                    onChange={(e) => setCurrency(e.target.value)}
+                  >
+                    <option value="RUB">RUB ₽</option>
+                    <option value="USD">USD $</option>
+                    <option value="EUR">EUR €</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Начальный баланс</label>
+                  <input
+                    className="form-input"
+                    type="number"
+                    value={initialBalance}
+                    onChange={(e) => setInitialBalance(e.target.value)}
+                    placeholder="0"
+                  />
+                </div>
+              </>
+            )}
 
             <button className="btn btn-primary" style={{ width: '100%' }} onClick={handleSave}>
               {editingId ? 'Сохранить' : 'Создать'}
