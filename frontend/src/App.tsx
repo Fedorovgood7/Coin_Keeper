@@ -29,7 +29,7 @@ export default function App() {
     } else {
       setInitialized(true);
     }
-  }, []);
+  }, [user, loadProfile]);
 
   if (!initialized) {
     return (

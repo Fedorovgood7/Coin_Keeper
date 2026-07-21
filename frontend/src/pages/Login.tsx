@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from '@/store';
 
@@ -7,6 +7,9 @@ export default function Login() {
   const [searchParams] = useSearchParams();
   const login = useStore((state) => state.login);
   const user = useStore((state) => state.user);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const loginStarted = useRef(false);
 
   useEffect(() => {
     if (user) {
@@ -15,16 +18,25 @@ export default function Login() {
     }
 
     const code = searchParams.get('code');
-    if (code) {
+    if (code && !loginStarted.current) {
+      loginStarted.current = true;
+      setLoading(true);
+      setError(null);
       login(code)
-        .then(() => navigate('/'))
-        .catch(() => {});
+        .then(() => {
+          navigate('/');
+        })
+        .catch((e) => {
+          setError('Ошибка входа: ' + (e as Error).message);
+          setLoading(false);
+          loginStarted.current = false;
+        });
     }
-  }, [user, searchParams]);
+  }, [user, searchParams, login, navigate]);
 
   const handleLogin = () => {
     const clientId = 'f5bdc1e4c2494499b66592bd9fa7ee43';
-    const redirectUri = encodeURIComponent(window.location.origin + '/api/v1/auth/yandex/callback');
+    const redirectUri = encodeURIComponent(window.location.origin + '/login');
     const authUrl = `https://oauth.yandex.ru/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}`;
     window.location.href = authUrl;
   };
@@ -37,8 +49,13 @@ export default function Login() {
         <p className="login-subtitle">
           Контролируйте свои финансы — учитывайте расходы, планируйте бюджет, достигайте целей
         </p>
-        <button className="btn btn-primary login-btn" onClick={handleLogin}>
-          Войти через Yandex ID
+        {error && (
+          <div style={{ color: 'var(--danger)', marginBottom: 16, fontSize: 13 }}>
+            {error}
+          </div>
+        )}
+        <button className="btn login-btn" onClick={handleLogin} disabled={loading}>
+          {loading ? 'Вход...' : 'Войти через Yandex ID'}
         </button>
       </div>
       <div className="login-right">
