@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -41,8 +40,6 @@ func (c *OAuthClient) ExchangeCode(ctx context.Context, code string) (string, er
 	data.Set("client_id", c.clientID)
 	data.Set("client_secret", c.clientSecret)
 
-	log.Printf("[yandex] exchanging code for client_id: %s, redirect_uri: %s", c.clientID, c.redirectURI)
-
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, tokenURL, strings.NewReader(data.Encode()))
 	if err != nil {
 		return "", fmt.Errorf("create request: %w", err)
@@ -55,10 +52,8 @@ func (c *OAuthClient) ExchangeCode(ctx context.Context, code string) (string, er
 	}
 	defer resp.Body.Close()
 
-	body, _ := io.ReadAll(resp.Body)
-	log.Printf("[yandex] token response status: %d, body: %s", resp.StatusCode, string(body))
-
 	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
 		return "", fmt.Errorf("unexpected status %d: %s", resp.StatusCode, string(body))
 	}
 
@@ -68,7 +63,7 @@ func (c *OAuthClient) ExchangeCode(ctx context.Context, code string) (string, er
 		ExpiresIn   int    `json:"expires_in"`
 	}
 
-	if err := json.Unmarshal(body, &tokenResp); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&tokenResp); err != nil {
 		return "", fmt.Errorf("decode response: %w", err)
 	}
 
@@ -76,7 +71,6 @@ func (c *OAuthClient) ExchangeCode(ctx context.Context, code string) (string, er
 		return "", fmt.Errorf("empty access token")
 	}
 
-	log.Printf("[yandex] successfully exchanged code for access token")
 	return tokenResp.AccessToken, nil
 }
 
@@ -93,14 +87,8 @@ func (c *OAuthClient) GetUserInfo(ctx context.Context, accessToken string) (*ser
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("read body: %w", err)
-	}
-
-	log.Printf("[yandex] user info response status: %d, body: %s", resp.StatusCode, string(body))
-
 	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
 		return nil, fmt.Errorf("unexpected status %d: %s", resp.StatusCode, string(body))
 	}
 
@@ -109,6 +97,11 @@ func (c *OAuthClient) GetUserInfo(ctx context.Context, accessToken string) (*ser
 		DefaultEmail    string `json:"default_email"`
 		DisplayName     string `json:"display_name"`
 		DefaultAvatarID string `json:"default_avatar_id"`
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read body: %w", err)
 	}
 
 	if err := json.Unmarshal(body, &userInfo); err != nil {
@@ -123,8 +116,6 @@ func (c *OAuthClient) GetUserInfo(ctx context.Context, accessToken string) (*ser
 	if userInfo.DefaultAvatarID != "" {
 		avatarURL = fmt.Sprintf("https://avatars.yandex.net/get-yapic/%s/islands-200", userInfo.DefaultAvatarID)
 	}
-
-	log.Printf("[yandex] successfully got user info: id=%s, email=%s", userInfo.ID, userInfo.DefaultEmail)
 
 	return &service.YandexUserInfo{
 		ID:        userInfo.ID,

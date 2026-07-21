@@ -1,11 +1,16 @@
 import { get, post } from './client';
 import type { RecurringPayment } from '@/types';
 
-export function getRecurringPayments() {
-  return get<RecurringPayment[]>('/recurring');
+interface ApiResponse<T> {
+  data: T;
 }
 
-export function createRecurring(data: {
+export async function getRecurringPayments() {
+  const response = await get<ApiResponse<RecurringPayment[]>>('/recurring');
+  return response.data;
+}
+
+export async function createRecurring(data: {
   type: string;
   amount: number;
   accountId: string;
@@ -15,7 +20,7 @@ export function createRecurring(data: {
   nextDate: string;
   comment?: string;
 }) {
-  return post<RecurringPayment>('/recurring', {
+  const response = await post<ApiResponse<RecurringPayment>>('/recurring', {
     type: data.type,
     amount: data.amount,
     account_id: data.accountId,
@@ -25,8 +30,9 @@ export function createRecurring(data: {
     next_date: data.nextDate,
     comment: data.comment,
   });
+  return response.data;
 }
 
-export function generateRecurringTransactions() {
-  return post<void>('/recurring/generate');
+export async function generateRecurringTransactions() {
+  await post<void>('/recurring/generate');
 }

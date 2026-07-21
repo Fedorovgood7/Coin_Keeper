@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from '@/store';
 
 export default function Login() {
-  alert('Login component mounted!');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const login = useStore((state) => state.login);
@@ -13,7 +12,6 @@ export default function Login() {
   const loginStarted = useRef(false);
 
   useEffect(() => {
-    alert('Login useEffect running, code: ' + searchParams.get('code'));
     if (user) {
       navigate('/');
       return;
@@ -24,14 +22,11 @@ export default function Login() {
       loginStarted.current = true;
       setLoading(true);
       setError(null);
-      alert('Login.tsx: starting login with code: ' + code.substring(0, 8) + '...');
       login(code)
         .then(() => {
-          alert('Login.tsx: login success, navigating to /');
           navigate('/');
         })
         .catch((e) => {
-          alert('Login.tsx: login failed: ' + (e as Error).message);
           setError('Ошибка входа: ' + (e as Error).message);
           setLoading(false);
           loginStarted.current = false;

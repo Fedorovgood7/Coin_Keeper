@@ -1,6 +1,11 @@
 import { get } from './client';
 import type { DashboardData } from '@/types';
 
-export function getDashboard() {
-  return get<DashboardData>('/dashboard');
+interface ApiResponse<T> {
+  data: T;
+}
+
+export async function getDashboard() {
+  const response = await get<ApiResponse<DashboardData>>('/dashboard');
+  return response.data;
 }

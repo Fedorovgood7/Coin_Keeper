@@ -1,10 +1,16 @@
 import { get, patch } from './client';
 import type { Category } from '@/types';
 
-export function getCategories() {
-  return get<Category[]>('/categories');
+interface ApiResponse<T> {
+  data: T;
 }
 
-export function updateCategory(id: string, data: { color?: string; icon?: string }) {
-  return patch<Category>(`/categories/${id}`, { id, ...data });
+export async function getCategories() {
+  const response = await get<ApiResponse<Category[]>>('/categories');
+  return response.data;
+}
+
+export async function updateCategory(id: string, data: { color?: string; icon?: string }) {
+  const response = await patch<ApiResponse<Category>>(`/categories/${id}`, { id, ...data });
+  return response.data;
 }

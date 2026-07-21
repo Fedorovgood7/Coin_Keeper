@@ -6,12 +6,18 @@ interface AuthResponse {
   user: User;
 }
 
-export function loginWithYandex(code: string) {
-  return post<AuthResponse>('/auth/yandex', { code });
+interface ApiResponse<T> {
+  data: T;
 }
 
-export function getProfile() {
-  return get<User>('/auth/me');
+export async function loginWithYandex(code: string) {
+  const response = await post<ApiResponse<AuthResponse>>('/auth/yandex', { code });
+  return response.data;
+}
+
+export async function getProfile() {
+  const response = await get<ApiResponse<User>>('/auth/me');
+  return response.data;
 }
 
 export function logout() {

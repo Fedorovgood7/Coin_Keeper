@@ -40,8 +40,6 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	log.Printf("[config] Yandex OAuth: client_id=%s, redirect_uri=%s", cfg.Yandex.ClientID, cfg.Yandex.RedirectURI)
-
 	db, err := sql.Open("postgres", cfg.Database.DSN())
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)

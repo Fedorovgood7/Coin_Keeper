@@ -1,18 +1,25 @@
 import { get, post } from './client';
 import type { MonthlyBudget, CategoryLimit, SafeDailyAmount } from '@/types';
 
-export function getMonthlyBudget(month: string) {
-  return get<MonthlyBudget>('/budget/monthly', { month });
+interface ApiResponse<T> {
+  data: T;
 }
 
-export function setCategoryLimit(categoryId: string, month: string, limit: number) {
-  return post<CategoryLimit>('/budget/category-limit', {
+export async function getMonthlyBudget(month: string) {
+  const response = await get<ApiResponse<MonthlyBudget>>('/budget/monthly', { month });
+  return response.data;
+}
+
+export async function setCategoryLimit(categoryId: string, month: string, limit: number) {
+  const response = await post<ApiResponse<CategoryLimit>>('/budget/category-limit', {
     category_id: categoryId,
     month,
     limit,
   });
+  return response.data;
 }
 
-export function getSafeDailyAmount(month: string) {
-  return get<SafeDailyAmount>('/budget/safe-daily-amount', { month });
+export async function getSafeDailyAmount(month: string) {
+  const response = await get<ApiResponse<SafeDailyAmount>>('/budget/safe-daily-amount', { month });
+  return response.data;
 }

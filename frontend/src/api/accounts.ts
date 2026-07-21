@@ -1,28 +1,36 @@
 import { get, post, patch } from './client';
 import type { Account } from '@/types';
 
-export function getAccounts() {
-  return get<Account[]>('/accounts');
+interface ApiResponse<T> {
+  data: T;
 }
 
-export function createAccount(data: {
+export async function getAccounts() {
+  const response = await get<ApiResponse<Account[]>>('/accounts');
+  return response.data;
+}
+
+export async function createAccount(data: {
   name: string;
   type: string;
   currency: string;
   initialBalance: number;
 }) {
-  return post<Account>('/accounts', {
+  const response = await post<ApiResponse<Account>>('/accounts', {
     name: data.name,
     type: data.type,
     currency: data.currency,
     initial_balance: data.initialBalance,
   });
+  return response.data;
 }
 
-export function updateAccount(id: string, name: string) {
-  return patch<Account>(`/accounts/${id}`, { id, name });
+export async function updateAccount(id: string, name: string) {
+  const response = await patch<ApiResponse<Account>>(`/accounts/${id}`, { id, name });
+  return response.data;
 }
 
-export function archiveAccount(id: string) {
-  return patch<Account>(`/accounts/${id}/archive`);
+export async function archiveAccount(id: string) {
+  const response = await patch<ApiResponse<Account>>(`/accounts/${id}/archive`);
+  return response.data;
 }

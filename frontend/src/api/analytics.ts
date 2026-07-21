@@ -1,6 +1,10 @@
 import { get } from './client';
 import type { CategoryStatItem, DailyStatItem, IncomeExpenseComparison } from '@/types';
 
+interface ApiResponse<T> {
+  data: T;
+}
+
 interface CategoryStatsResponse {
   month: string;
   categories: CategoryStatItem[];
@@ -12,14 +16,17 @@ interface DailyStatsResponse {
   days: DailyStatItem[];
 }
 
-export function getCategoryStats(month: string) {
-  return get<CategoryStatsResponse>('/analytics/categories', { month });
+export async function getCategoryStats(month: string) {
+  const response = await get<ApiResponse<CategoryStatsResponse>>('/analytics/categories', { month });
+  return response.data;
 }
 
-export function getDailyStats(month: string) {
-  return get<DailyStatsResponse>('/analytics/daily', { month });
+export async function getDailyStats(month: string) {
+  const response = await get<ApiResponse<DailyStatsResponse>>('/analytics/daily', { month });
+  return response.data;
 }
 
-export function getIncomeExpenseComparison(month: string) {
-  return get<IncomeExpenseComparison>('/analytics/comparison', { month });
+export async function getIncomeExpenseComparison(month: string) {
+  const response = await get<ApiResponse<IncomeExpenseComparison>>('/analytics/comparison', { month });
+  return response.data;
 }

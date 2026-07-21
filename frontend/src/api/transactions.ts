@@ -1,7 +1,11 @@
 import { get, post, patch, del } from './client';
 import type { Transaction } from '@/types';
 
-export function getTransactions(params?: {
+interface ApiResponse<T> {
+  data: T;
+}
+
+export async function getTransactions(params?: {
   dateFrom?: string;
   dateTo?: string;
   accountId?: string;
@@ -14,10 +18,11 @@ export function getTransactions(params?: {
   if (params?.accountId) queryParams.account_id = params.accountId;
   if (params?.categoryId) queryParams.category_id = params.categoryId;
   if (params?.type) queryParams.type = params.type;
-  return get<Transaction[]>('/transactions', queryParams);
+  const response = await get<ApiResponse<Transaction[]>>('/transactions', queryParams);
+  return response.data;
 }
 
-export function createTransaction(data: {
+export async function createTransaction(data: {
   type: string;
   amount: number;
   accountId: string;
@@ -26,7 +31,7 @@ export function createTransaction(data: {
   date: string;
   comment?: string;
 }) {
-  return post<Transaction>('/transactions', {
+  const response = await post<ApiResponse<Transaction>>('/transactions', {
     type: data.type,
     amount: data.amount,
     account_id: data.accountId,
@@ -35,20 +40,22 @@ export function createTransaction(data: {
     date: data.date,
     comment: data.comment,
   });
+  return response.data;
 }
 
-export function updateTransaction(id: string, data: {
+export async function updateTransaction(id: string, data: {
   amount?: number;
   categoryId?: string;
   date?: string;
   comment?: string;
 }) {
-  return patch<Transaction>(`/transactions/${id}`, {
+  const response = await patch<ApiResponse<Transaction>>(`/transactions/${id}`, {
     id,
     ...data,
   });
+  return response.data;
 }
 
-export function deleteTransaction(id: string) {
-  return del<void>(`/transactions/${id}`);
+export async function deleteTransaction(id: string) {
+  await del<void>(`/transactions/${id}`);
 }

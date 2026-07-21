@@ -15,9 +15,7 @@ export function getToken(): string | null {
 }
 
 export function setToken(token: string): void {
-  alert('setToken called with: ' + (token ? token.substring(0, 20) + '...' : 'EMPTY'));
   localStorage.setItem('coinkeeper-token', token);
-  alert('Token saved to localStorage, checking: ' + localStorage.getItem('coinkeeper-token')?.substring(0, 20));
 }
 
 export function removeToken(): void {
@@ -29,9 +27,6 @@ async function request<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const token = getToken();
-  if (endpoint === '/auth/me') {
-    alert('Request to /auth/me, token from localStorage: ' + (token ? token.substring(0, 20) + '...' : 'NULL'));
-  }
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),
@@ -55,11 +50,7 @@ async function request<T>(
     return {} as T;
   }
 
-  const data = await response.json();
-  if (endpoint === '/auth/yandex') {
-    alert('Raw response from /auth/yandex: ' + JSON.stringify(data));
-  }
-  return data;
+  return response.json();
 }
 
 export function get<T>(endpoint: string, params?: Record<string, string>): Promise<T> {
