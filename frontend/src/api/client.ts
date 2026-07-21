@@ -51,7 +51,11 @@ async function request<T>(
     return {} as T;
   }
 
-  return response.json();
+  const data = await response.json();
+  if (endpoint === '/auth/yandex') {
+    alert('Raw response from /auth/yandex: ' + JSON.stringify(data));
+  }
+  return data;
 }
 
 export function get<T>(endpoint: string, params?: Record<string, string>): Promise<T> {
