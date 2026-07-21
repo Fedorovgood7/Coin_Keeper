@@ -28,9 +28,9 @@ import type {
 export const authService = {
   async loginWithYandex(code: string): Promise<{ token: string; user: User }> {
     const result = await authApi.loginWithYandex(code);
-    alert('Login response: ' + JSON.stringify(result));
+    alert('Auth service received: ' + JSON.stringify(result).substring(0, 100));
     if (!result.token) {
-      alert('No token in response!');
+      alert('No token in response! Keys: ' + Object.keys(result).join(', '));
     }
     setToken(result.token);
     return result;

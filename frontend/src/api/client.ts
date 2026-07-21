@@ -15,8 +15,9 @@ export function getToken(): string | null {
 }
 
 export function setToken(token: string): void {
-  alert('Setting token: ' + (token ? token.substring(0, 20) + '...' : 'undefined'));
+  alert('setToken called with: ' + (token ? token.substring(0, 20) + '...' : 'EMPTY'));
   localStorage.setItem('coinkeeper-token', token);
+  alert('Token saved to localStorage, checking: ' + localStorage.getItem('coinkeeper-token')?.substring(0, 20));
 }
 
 export function removeToken(): void {
@@ -28,6 +29,9 @@ async function request<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const token = getToken();
+  if (endpoint === '/auth/me') {
+    alert('Request to /auth/me, token from localStorage: ' + (token ? token.substring(0, 20) + '...' : 'NULL'));
+  }
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),
