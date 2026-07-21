@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useStore } from '@/store';
+import Sidebar from '@/components/Sidebar';
 import Login from '@/pages/Login';
 import Dashboard from '@/pages/Dashboard';
 import Transactions from '@/pages/Transactions';
@@ -15,6 +16,17 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const user = useStore((state) => state.user);
   if (!user) return <Navigate to="/login" replace />;
   return <>{children}</>;
+}
+
+function AppLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="app-layout">
+      <Sidebar />
+      <div className="page-wrapper">
+        {children}
+      </div>
+    </div>
+  );
 }
 
 export default function App() {
@@ -46,7 +58,9 @@ export default function App() {
         path="/"
         element={
           <ProtectedRoute>
-            <Dashboard />
+            <AppLayout>
+              <Dashboard />
+            </AppLayout>
           </ProtectedRoute>
         }
       />
@@ -54,7 +68,9 @@ export default function App() {
         path="/transactions"
         element={
           <ProtectedRoute>
-            <Transactions />
+            <AppLayout>
+              <Transactions />
+            </AppLayout>
           </ProtectedRoute>
         }
       />
@@ -62,7 +78,9 @@ export default function App() {
         path="/accounts"
         element={
           <ProtectedRoute>
-            <Accounts />
+            <AppLayout>
+              <Accounts />
+            </AppLayout>
           </ProtectedRoute>
         }
       />
@@ -70,7 +88,9 @@ export default function App() {
         path="/budget"
         element={
           <ProtectedRoute>
-            <Budget />
+            <AppLayout>
+              <Budget />
+            </AppLayout>
           </ProtectedRoute>
         }
       />
@@ -78,7 +98,9 @@ export default function App() {
         path="/analytics"
         element={
           <ProtectedRoute>
-            <Analytics />
+            <AppLayout>
+              <Analytics />
+            </AppLayout>
           </ProtectedRoute>
         }
       />
@@ -86,7 +108,9 @@ export default function App() {
         path="/categories"
         element={
           <ProtectedRoute>
-            <Categories />
+            <AppLayout>
+              <Categories />
+            </AppLayout>
           </ProtectedRoute>
         }
       />
@@ -94,7 +118,9 @@ export default function App() {
         path="/add-transaction"
         element={
           <ProtectedRoute>
-            <AddTransaction />
+            <AppLayout>
+              <AddTransaction />
+            </AppLayout>
           </ProtectedRoute>
         }
       />

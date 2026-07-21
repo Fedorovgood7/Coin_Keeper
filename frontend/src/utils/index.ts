@@ -1,6 +1,9 @@
 import type { Account, Transaction } from '@/types';
 
-export function formatMoney(amount: number, currency: string = 'RUB'): string {
+export function formatMoney(amount: number | undefined | null, currency: string = 'RUB'): string {
+  if (amount === undefined || amount === null || isNaN(amount)) {
+    return '0 ₽';
+  }
   const symbols: Record<string, string> = { RUB: '₽', USD: '$', EUR: '€' };
   const symbol = symbols[currency] || currency;
   return new Intl.NumberFormat('ru-RU').format(Math.round(amount)) + ' ' + symbol;

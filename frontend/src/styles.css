@@ -96,12 +96,12 @@ input, select, textarea {
 }
 
 .btn-primary {
-  background: var(--accent);
-  color: var(--bg);
+  background: var(--accent-secondary);
+  color: #ffffff;
 }
 
 .btn-primary:hover {
-  background: var(--accent-secondary);
+  background: #e64a00;
 }
 
 .btn-secondary {
@@ -909,6 +909,16 @@ input, select, textarea {
 
 /* ===== DESKTOP LAYOUT (≥768px) ===== */
 
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.page-wrapper {
+  flex: 1;
+  min-width: 0;
+}
+
 .sidebar {
   display: none;
 }
@@ -916,6 +926,10 @@ input, select, textarea {
 @media (min-width: 768px) {
   body {
     background: var(--surface);
+  }
+
+  .page-wrapper {
+    margin-left: 220px;
   }
 
   .container {
