@@ -15,6 +15,7 @@ export function getToken(): string | null {
 }
 
 export function setToken(token: string): void {
+  console.log('[client] setting token:', token ? token.substring(0, 20) + '...' : 'undefined');
   localStorage.setItem('coinkeeper-token', token);
 }
 
