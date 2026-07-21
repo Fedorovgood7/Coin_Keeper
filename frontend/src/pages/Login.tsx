@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from '@/store';
 
 export default function Login() {
+  alert('Login component mounted!');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const login = useStore((state) => state.login);
@@ -12,6 +13,7 @@ export default function Login() {
   const loginStarted = useRef(false);
 
   useEffect(() => {
+    alert('Login useEffect running, code: ' + searchParams.get('code'));
     if (user) {
       navigate('/');
       return;
