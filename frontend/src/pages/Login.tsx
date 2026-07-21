@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from '@/store';
 
@@ -9,6 +9,7 @@ export default function Login() {
   const user = useStore((state) => state.user);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const loginStarted = useRef(false);
 
   useEffect(() => {
     if (user) {
@@ -17,17 +18,21 @@ export default function Login() {
     }
 
     const code = searchParams.get('code');
-    if (code) {
+    if (code && !loginStarted.current) {
+      loginStarted.current = true;
       setLoading(true);
       setError(null);
       login(code)
-        .then(() => navigate('/'))
+        .then(() => {
+          navigate('/');
+        })
         .catch((e) => {
           setError('Ошибка входа: ' + (e as Error).message);
           setLoading(false);
+          loginStarted.current = false;
         });
     }
-  }, [user, searchParams]);
+  }, [user, searchParams, login, navigate]);
 
   const handleLogin = () => {
     const clientId = 'f5bdc1e4c2494499b66592bd9fa7ee43';
