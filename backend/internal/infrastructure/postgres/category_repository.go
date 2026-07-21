@@ -55,9 +55,10 @@ func (r *CategoryRepository) GetByID(ctx context.Context, id string, userID stri
 	`
 
 	category := &entity.Category{}
+	var userIDNull sql.NullString
 	err := r.db.QueryRowContext(ctx, query, id, userID).Scan(
 		&category.ID,
-		&category.UserID,
+		&userIDNull,
 		&category.Name,
 		&category.Type,
 		&category.Color,
@@ -69,6 +70,10 @@ func (r *CategoryRepository) GetByID(ctx context.Context, id string, userID stri
 
 	if err == sql.ErrNoRows {
 		return nil, domain.ErrNotFound
+	}
+
+	if userIDNull.Valid {
+		category.UserID = userIDNull.String
 	}
 
 	return category, err
@@ -91,9 +96,10 @@ func (r *CategoryRepository) GetByUserID(ctx context.Context, userID string) ([]
 	categories := make([]*entity.Category, 0)
 	for rows.Next() {
 		category := &entity.Category{}
+		var userIDNull sql.NullString
 		err := rows.Scan(
 			&category.ID,
-			&category.UserID,
+			&userIDNull,
 			&category.Name,
 			&category.Type,
 			&category.Color,
@@ -104,6 +110,9 @@ func (r *CategoryRepository) GetByUserID(ctx context.Context, userID string) ([]
 		)
 		if err != nil {
 			return nil, err
+		}
+		if userIDNull.Valid {
+			category.UserID = userIDNull.String
 		}
 		categories = append(categories, category)
 	}
@@ -128,9 +137,10 @@ func (r *CategoryRepository) GetDefaultCategories(ctx context.Context) ([]*entit
 	categories := make([]*entity.Category, 0)
 	for rows.Next() {
 		category := &entity.Category{}
+		var userIDNull sql.NullString
 		err := rows.Scan(
 			&category.ID,
-			&category.UserID,
+			&userIDNull,
 			&category.Name,
 			&category.Type,
 			&category.Color,
@@ -141,6 +151,9 @@ func (r *CategoryRepository) GetDefaultCategories(ctx context.Context) ([]*entit
 		)
 		if err != nil {
 			return nil, err
+		}
+		if userIDNull.Valid {
+			category.UserID = userIDNull.String
 		}
 		categories = append(categories, category)
 	}

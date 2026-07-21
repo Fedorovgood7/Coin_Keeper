@@ -58,19 +58,20 @@ func (r *RecurringRepository) Create(ctx context.Context, recurring *entity.Recu
 
 func (r *RecurringRepository) GetByID(ctx context.Context, id string, userID string) (*entity.RecurringPayment, error) {
 	query := `
-		SELECT id, user_id, type, amount, account_id, COALESCE(to_account_id, ''), category_id, periodicity, next_date, COALESCE(comment, ''), is_active, created_at, updated_at
+		SELECT id, user_id, type, amount, account_id, to_account_id, category_id, periodicity, next_date, COALESCE(comment, ''), is_active, created_at, updated_at
 		FROM recurring_payments
 		WHERE id = $1 AND user_id = $2
 	`
 
 	recurring := &entity.RecurringPayment{}
+	var toAccountID sql.NullString
 	err := r.db.QueryRowContext(ctx, query, id, userID).Scan(
 		&recurring.ID,
 		&recurring.UserID,
 		&recurring.Type,
 		&recurring.Amount,
 		&recurring.AccountID,
-		&recurring.ToAccountID,
+		&toAccountID,
 		&recurring.CategoryID,
 		&recurring.Periodicity,
 		&recurring.NextDate,
@@ -84,12 +85,20 @@ func (r *RecurringRepository) GetByID(ctx context.Context, id string, userID str
 		return nil, domain.ErrNotFound
 	}
 
+	if toAccountID.Valid {
+		recurring.ToAccountID = toAccountID.String
+	}
+
 	return recurring, err
 }
 
 func (r *RecurringRepository) GetByUserID(ctx context.Context, userID string) ([]*entity.RecurringPayment, error) {
+	if userID == "" {
+		return []*entity.RecurringPayment{}, nil
+	}
+
 	query := `
-		SELECT id, user_id, type, amount, account_id, COALESCE(to_account_id, ''), category_id, periodicity, next_date, COALESCE(comment, ''), is_active, created_at, updated_at
+		SELECT id, user_id, type, amount, account_id, to_account_id, category_id, periodicity, next_date, COALESCE(comment, ''), is_active, created_at, updated_at
 		FROM recurring_payments
 		WHERE user_id = $1
 		ORDER BY next_date ASC
@@ -104,13 +113,14 @@ func (r *RecurringRepository) GetByUserID(ctx context.Context, userID string) ([
 	recurringPayments := make([]*entity.RecurringPayment, 0)
 	for rows.Next() {
 		recurring := &entity.RecurringPayment{}
+		var toAccountID sql.NullString
 		err := rows.Scan(
 			&recurring.ID,
 			&recurring.UserID,
 			&recurring.Type,
 			&recurring.Amount,
 			&recurring.AccountID,
-			&recurring.ToAccountID,
+			&toAccountID,
 			&recurring.CategoryID,
 			&recurring.Periodicity,
 			&recurring.NextDate,
@@ -122,6 +132,9 @@ func (r *RecurringRepository) GetByUserID(ctx context.Context, userID string) ([
 		if err != nil {
 			return nil, err
 		}
+		if toAccountID.Valid {
+			recurring.ToAccountID = toAccountID.String
+		}
 		recurringPayments = append(recurringPayments, recurring)
 	}
 
@@ -130,7 +143,7 @@ func (r *RecurringRepository) GetByUserID(ctx context.Context, userID string) ([
 
 func (r *RecurringRepository) GetDuePayments(ctx context.Context) ([]*entity.RecurringPayment, error) {
 	query := `
-		SELECT id, user_id, type, amount, account_id, COALESCE(to_account_id, ''), category_id, periodicity, next_date, COALESCE(comment, ''), is_active, created_at, updated_at
+		SELECT id, user_id, type, amount, account_id, to_account_id, category_id, periodicity, next_date, COALESCE(comment, ''), is_active, created_at, updated_at
 		FROM recurring_payments
 		WHERE is_active = true AND next_date <= NOW()
 		ORDER BY next_date ASC
@@ -145,13 +158,14 @@ func (r *RecurringRepository) GetDuePayments(ctx context.Context) ([]*entity.Rec
 	recurringPayments := make([]*entity.RecurringPayment, 0)
 	for rows.Next() {
 		recurring := &entity.RecurringPayment{}
+		var toAccountID sql.NullString
 		err := rows.Scan(
 			&recurring.ID,
 			&recurring.UserID,
 			&recurring.Type,
 			&recurring.Amount,
 			&recurring.AccountID,
-			&recurring.ToAccountID,
+			&toAccountID,
 			&recurring.CategoryID,
 			&recurring.Periodicity,
 			&recurring.NextDate,
@@ -162,6 +176,9 @@ func (r *RecurringRepository) GetDuePayments(ctx context.Context) ([]*entity.Rec
 		)
 		if err != nil {
 			return nil, err
+		}
+		if toAccountID.Valid {
+			recurring.ToAccountID = toAccountID.String
 		}
 		recurringPayments = append(recurringPayments, recurring)
 	}
