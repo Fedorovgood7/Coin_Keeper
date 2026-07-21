@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"coinkeeper/internal/application/dto"
@@ -56,6 +57,7 @@ func (h *RecurringHandler) GetRecurringPayments(w http.ResponseWriter, r *http.R
 
 	result, err := h.getRecurringPaymentsUC.Execute(r.Context(), userID)
 	if err != nil {
+		log.Printf("[recurring] error for user %s: %v", userID, err)
 		response.HandleDomainError(w, err)
 		return
 	}

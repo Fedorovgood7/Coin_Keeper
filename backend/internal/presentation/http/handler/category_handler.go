@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"coinkeeper/internal/application/dto"
@@ -35,6 +36,7 @@ func (h *CategoryHandler) GetCategories(w http.ResponseWriter, r *http.Request) 
 
 	result, err := h.getCategoriesUC.Execute(r.Context(), userID)
 	if err != nil {
+		log.Printf("[categories] error for user %s: %v", userID, err)
 		response.HandleDomainError(w, err)
 		return
 	}

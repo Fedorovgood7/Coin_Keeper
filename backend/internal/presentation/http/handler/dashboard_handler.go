@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 
 	"coinkeeper/internal/application/usecase/dashboard"
@@ -21,6 +22,7 @@ func (h *DashboardHandler) GetDashboard(w http.ResponseWriter, r *http.Request) 
 
 	result, err := h.getDashboardDataUC.Execute(r.Context(), userID)
 	if err != nil {
+		log.Printf("[dashboard] error for user %s: %v", userID, err)
 		response.HandleDomainError(w, err)
 		return
 	}
