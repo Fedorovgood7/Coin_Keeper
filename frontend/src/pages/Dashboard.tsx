@@ -25,7 +25,7 @@ export default function Dashboard() {
     );
   }
 
-  const upcomingRecurring = dashboard.upcomingRecurring.slice(0, 6);
+  const upcomingRecurring = (dashboard.upcomingRecurring || []).slice(0, 6);
 
   return (
     <div className="page-wrapper">
@@ -117,12 +117,12 @@ export default function Dashboard() {
             Аналитика →
           </Link>
         </div>
-        {dashboard.topCategories.length === 0 ? (
+        {(dashboard.topCategories || []).length === 0 ? (
           <div className="empty-state" style={{ padding: 24 }}>
             <div style={{ fontSize: 13, color: 'var(--muted)' }}>Нет данных</div>
           </div>
         ) : (
-          dashboard.topCategories.slice(0, 5).map((cat) => (
+          (dashboard.topCategories || []).slice(0, 5).map((cat) => (
             <div className="card" key={cat.categoryId} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div
                 className="icon-circle"

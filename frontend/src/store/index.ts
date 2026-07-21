@@ -152,7 +152,13 @@ export const useStore = create<AppState>()((set, get) => ({
   loadDashboard: async () => {
     try {
       const dashboard = await dashboardService.getData();
-      set({ dashboard });
+      set({ 
+        dashboard: {
+          ...dashboard,
+          topCategories: dashboard.topCategories || [],
+          upcomingRecurring: dashboard.upcomingRecurring || [],
+        } 
+      });
     } catch (e) {
       set({ error: (e as Error).message });
     }
