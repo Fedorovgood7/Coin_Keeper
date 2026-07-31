@@ -46,7 +46,7 @@ export default function Dashboard() {
               + Доход
             </button>
             <button
-              className="toolbar-btn"
+              className="toolbar-btn toolbar-btn-primary"
               onClick={() => navigate('/add-transaction?type=transfer')}
             >
               Перевод
@@ -61,26 +61,6 @@ export default function Dashboard() {
               {new Intl.NumberFormat('ru-RU').format(dashboard.totalBalance)}{' '}
               <span className="balance-currency">₽</span>
             </div>
-          </div>
-          <div className="balance-actions">
-            <button
-              className="balance-action-btn"
-              onClick={() => navigate('/add-transaction?type=expense')}
-            >
-              + Расход
-            </button>
-            <button
-              className="balance-action-btn"
-              onClick={() => navigate('/add-transaction?type=income')}
-            >
-              + Доход
-            </button>
-            <button
-              className="balance-action-btn"
-              onClick={() => navigate('/add-transaction?type=transfer')}
-            >
-              Перевод
-            </button>
           </div>
         </div>
 

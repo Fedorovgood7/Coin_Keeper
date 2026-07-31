@@ -8,7 +8,7 @@ export default function AddTransaction() {
   const [searchParams] = useSearchParams();
   const initialType = searchParams.get('type') as 'expense' | 'income' | 'transfer' || 'expense';
 
-  const { accounts, categories, loadAccounts, loadCategories, createTransaction } = useStore();
+  const { accounts, categories, loadAccounts, loadCategories, createTransaction, error, clearError } = useStore();
   const [type, setType] = useState<'expense' | 'income' | 'transfer'>(initialType);
   const [amount, setAmount] = useState('');
   const [accountId, setAccountId] = useState('');
@@ -16,6 +16,7 @@ export default function AddTransaction() {
   const [categoryId, setCategoryId] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [comment, setComment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     loadAccounts();
@@ -39,17 +40,22 @@ export default function AddTransaction() {
     if (type !== 'transfer' && !categoryId) return;
     if (type === 'transfer' && !targetAccountId) return;
 
-    await createTransaction({
-      type,
-      amount: parseFloat(amount),
-      accountId,
-      toAccountId: type === 'transfer' ? targetAccountId : undefined,
-      categoryId: type !== 'transfer' ? categoryId : '',
-      date: new Date(date).toISOString(),
-      comment,
-    });
-
-    navigate('/transactions');
+    setSubmitting(true);
+    clearError();
+    try {
+      await createTransaction({
+        type,
+        amount: parseFloat(amount),
+        accountId,
+        toAccountId: type === 'transfer' ? targetAccountId : undefined,
+        categoryId: type !== 'transfer' ? categoryId : '',
+        date: new Date(date).toISOString(),
+        comment,
+      });
+      navigate('/transactions');
+    } catch (e) {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -59,13 +65,19 @@ export default function AddTransaction() {
           <button
             className="toolbar-btn"
             onClick={() => navigate(-1)}
-            style={{ background: 'none', border: 'none', fontSize: 20 }}
+            style={{ background: 'none', border: 'none', fontSize: 20, color: 'var(--fg)' }}
           >
             ←
           </button>
           <h1>Добавление операции</h1>
           <div style={{ width: 40 }}></div>
         </div>
+
+        {error && (
+          <div style={{ background: 'rgba(214, 48, 48, 0.15)', border: '1px solid var(--danger)', color: '#ff6b6b', padding: '10px 14px', borderRadius: 'var(--radius)', marginBottom: 16, fontSize: 13 }}>
+            {error}
+          </div>
+        )}
 
         <div className="tabs">
           {(['expense', 'income', 'transfer'] as const).map((t) => (
@@ -200,9 +212,9 @@ export default function AddTransaction() {
           className="btn btn-primary"
           style={{ width: '100%', padding: 16 }}
           onClick={handleSubmit}
-          disabled={!amount || parseFloat(amount) <= 0 || (type !== 'transfer' && !categoryId)}
+          disabled={!amount || parseFloat(amount) <= 0 || (type !== 'transfer' && !categoryId) || submitting}
         >
-          Создать
+          {submitting ? 'Создание...' : 'Создать'}
         </button>
 
         <div className="bottom-spacer"></div>

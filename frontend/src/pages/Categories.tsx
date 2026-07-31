@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useStore } from '@/store';
 
 export default function Categories() {
-  const { categories, loadCategories, updateCategory, createCategory } = useStore();
+  const { categories, loadCategories, updateCategory, createCategory, error, clearError } = useStore();
   const [showModal, setShowModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -12,6 +12,7 @@ export default function Categories() {
   const [newType, setNewType] = useState<'expense' | 'income'>('expense');
   const [newColor, setNewColor] = useState('#4285f4');
   const [newIcon, setNewIcon] = useState('📦');
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     loadCategories();
@@ -26,13 +27,22 @@ export default function Categories() {
     setEditingId(id);
     setColor(cat.color);
     setIcon(cat.icon);
+    clearError();
     setShowModal(true);
   };
 
   const handleSave = async () => {
     if (!editingId) return;
-    await updateCategory(editingId, { color, icon });
-    setShowModal(false);
+    setSaving(true);
+    clearError();
+    try {
+      await updateCategory(editingId, { color, icon });
+      setShowModal(false);
+    } catch (e) {
+      // error is shown via store
+    } finally {
+      setSaving(false);
+    }
   };
 
   const openCreate = () => {
@@ -40,13 +50,22 @@ export default function Categories() {
     setNewType('expense');
     setNewColor('#4285f4');
     setNewIcon('📦');
+    clearError();
     setShowCreateModal(true);
   };
 
   const handleCreate = async () => {
     if (!newName.trim()) return;
-    await createCategory({ name: newName, type: newType, color: newColor, icon: newIcon });
-    setShowCreateModal(false);
+    setSaving(true);
+    clearError();
+    try {
+      await createCategory({ name: newName, type: newType, color: newColor, icon: newIcon });
+      setShowCreateModal(false);
+    } catch (e) {
+      // error is shown via store
+    } finally {
+      setSaving(false);
+    }
   };
 
   const ICONS = ['📦', '🍕', '🛒', '🎬', '💊', '🛍️', '☕', '👕', '🏋️', '💼', '💻', '🎁', '📈', '🎯', '🍔', '🚌', '💳', '🏦', '📱', '🏠'];
@@ -105,6 +124,12 @@ export default function Categories() {
               </button>
             </div>
 
+            {error && (
+              <div style={{ background: 'rgba(214, 48, 48, 0.15)', border: '1px solid var(--danger)', color: '#ff6b6b', padding: '10px 14px', borderRadius: 'var(--radius)', marginBottom: 16, fontSize: 13 }}>
+                {error}
+              </div>
+            )}
+
             <div className="form-group">
               <label className="form-label">Иконка</label>
               <div className="grid-3" style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}>
@@ -141,8 +166,8 @@ export default function Categories() {
               </div>
             </div>
 
-            <button className="btn btn-primary" style={{ width: '100%' }} onClick={handleSave}>
-              Сохранить
+            <button className="btn btn-primary" style={{ width: '100%' }} onClick={handleSave} disabled={saving}>
+              {saving ? 'Сохранение...' : 'Сохранить'}
             </button>
           </div>
         </div>
@@ -157,6 +182,12 @@ export default function Categories() {
                 
               </button>
             </div>
+
+            {error && (
+              <div style={{ background: 'rgba(214, 48, 48, 0.15)', border: '1px solid var(--danger)', color: '#ff6b6b', padding: '10px 14px', borderRadius: 'var(--radius)', marginBottom: 16, fontSize: 13 }}>
+                {error}
+              </div>
+            )}
 
             <div className="form-group">
               <label className="form-label">Название</label>
@@ -222,8 +253,8 @@ export default function Categories() {
               </div>
             </div>
 
-            <button className="btn btn-primary" style={{ width: '100%' }} onClick={handleCreate}>
-              Создать
+            <button className="btn btn-primary" style={{ width: '100%' }} onClick={handleCreate} disabled={saving}>
+              {saving ? 'Создание...' : 'Создать'}
             </button>
           </div>
         </div>
