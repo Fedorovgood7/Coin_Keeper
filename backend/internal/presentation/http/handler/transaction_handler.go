@@ -94,6 +94,7 @@ func (h *TransactionHandler) GetTransactions(w http.ResponseWriter, r *http.Requ
 
 	result, err := h.getTransactionsUC.Execute(r.Context(), userID, req)
 	if err != nil {
+		log.Printf("[GetTransactions] error for user %s: %v", userID, err)
 		response.HandleDomainError(w, err)
 		return
 	}
