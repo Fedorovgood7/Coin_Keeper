@@ -66,7 +66,7 @@ func (r *TransactionRepository) Create(ctx context.Context, transaction *entity.
 
 func (r *TransactionRepository) GetByID(ctx context.Context, id string, userID string) (*entity.Transaction, error) {
 	query := `
-		SELECT id, user_id, type, amount, account_id, to_account_id, category_id, date, COALESCE(comment, ''), COALESCE(recurring_id, ''), created_at
+		SELECT id, user_id, type, amount, account_id, to_account_id, category_id, date, COALESCE(comment, ''), recurring_id, created_at
 		FROM transactions
 		WHERE id = $1 AND user_id = $2
 	`
@@ -144,7 +144,7 @@ func (r *TransactionRepository) GetByFilter(ctx context.Context, filter reposito
 	}
 
 	query := `
-		SELECT id, user_id, type, amount, account_id, to_account_id, category_id, date, COALESCE(comment, ''), COALESCE(recurring_id, ''), created_at
+		SELECT id, user_id, type, amount, account_id, to_account_id, category_id, date, COALESCE(comment, ''), recurring_id, created_at
 		FROM transactions
 		WHERE ` + strings.Join(conditions, " AND ") + `
 		ORDER BY date DESC
