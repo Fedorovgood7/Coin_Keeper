@@ -74,12 +74,6 @@ export default function Dashboard() {
             <div className="stat-value expense">{formatMoney(dashboard.monthlyExpense)}</div>
           </div>
           <div className="stat-card">
-            <div className="stat-label">Безопасно в день</div>
-            <div className="stat-value" style={{ color: 'var(--success)' }}>
-              {formatMoney(dashboard.safeDailyAmount)}
-            </div>
-          </div>
-          <div className="stat-card">
             <div className="stat-label">Остаток бюджета</div>
             <div className="stat-value">{formatMoney(dashboard.budgetRemaining)}</div>
           </div>
@@ -90,6 +84,47 @@ export default function Dashboard() {
           <div className="safe-amount">{formatMoney(dashboard.safeDailyAmount)}</div>
           <div className="safe-subtitle">до конца месяца</div>
         </div>
+
+        {(dashboard.topCategories || []).length > 0 && (
+          <div className="card">
+            <div className="section-title" style={{ marginBottom: 16 }}>
+              <span>Расходы по категориям</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+              <div
+                style={{
+                  width: 150,
+                  height: 150,
+                  borderRadius: '50%',
+                  background: `conic-gradient(${(dashboard.topCategories || [])
+                    .map((cat, i) => {
+                      const colors = ['#4caf50', '#2196f3', '#ff9800', '#9c27b0', '#f44336'];
+                      const color = colors[i % colors.length];
+                      const start = (dashboard.topCategories || [])
+                        .slice(0, i)
+                        .reduce((sum, c) => sum + c.percent, 0);
+                      return `${color} ${start}% ${start + cat.percent}%`;
+                    })
+                    .join(', ')})`,
+                  flexShrink: 0,
+                }}
+              />
+              <div style={{ flex: 1 }}>
+                {(dashboard.topCategories || []).slice(0, 5).map((cat, i) => {
+                  const colors = ['#4caf50', '#2196f3', '#ff9800', '#9c27b0', '#f44336'];
+                  const color = colors[i % colors.length];
+                  return (
+                    <div key={cat.categoryId} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                      <div style={{ width: 12, height: 12, borderRadius: 2, background: color, flexShrink: 0 }} />
+                      <div style={{ flex: 1, fontSize: 13 }}>{cat.name}</div>
+                      <div style={{ fontSize: 13, fontWeight: 600 }}>{Math.round(cat.percent)}%</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="section-title">
           <span>Топ категории</span>
