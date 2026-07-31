@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"time"
 
@@ -60,6 +61,7 @@ func (h *TransactionHandler) CreateTransaction(w http.ResponseWriter, r *http.Re
 
 	result, err := h.createTransactionUC.Execute(r.Context(), userID, req)
 	if err != nil {
+		log.Printf("[CreateTransaction] error for user %s: %v", userID, err)
 		response.HandleDomainError(w, err)
 		return
 	}
