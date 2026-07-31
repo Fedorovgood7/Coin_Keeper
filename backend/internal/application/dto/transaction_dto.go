@@ -7,7 +7,7 @@ type CreateTransactionRequest struct {
 	Amount      float64   `json:"amount" validate:"required,gt=0"`
 	AccountID   string    `json:"account_id" validate:"required"`
 	ToAccountID string    `json:"to_account_id,omitempty"`
-	CategoryID  string    `json:"category_id" validate:"required"`
+	CategoryID  string    `json:"category_id"`
 	Date        time.Time `json:"date" validate:"required"`
 	Comment     string    `json:"comment,omitempty"`
 }

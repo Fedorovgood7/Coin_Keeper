@@ -927,13 +927,57 @@ input, select, textarea {
 .page-wrapper {
   flex: 1;
   min-width: 0;
+  padding-bottom: 70px;
 }
 
 .sidebar {
   display: none;
 }
 
+/* Mobile bottom navigation */
+.sidebar-mobile {
+  display: flex;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  padding: 8px 0;
+  z-index: 100;
+  justify-content: space-around;
+}
+
+.sidebar-mobile-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  color: var(--muted);
+  font-size: 10px;
+  text-decoration: none;
+  transition: color 0.15s;
+  flex: 1;
+}
+
+.sidebar-mobile-link.active {
+  color: #FFD700;
+}
+
+.sidebar-mobile-link-icon {
+  font-size: 20px;
+}
+
 @media (min-width: 768px) {
+  .sidebar-mobile {
+    display: none;
+  }
+
+  .page-wrapper {
+    padding-bottom: 0;
+  }
+
   body {
     background: var(--surface);
   }
