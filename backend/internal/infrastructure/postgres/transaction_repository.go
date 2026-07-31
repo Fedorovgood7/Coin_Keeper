@@ -66,28 +66,39 @@ func (r *TransactionRepository) Create(ctx context.Context, transaction *entity.
 
 func (r *TransactionRepository) GetByID(ctx context.Context, id string, userID string) (*entity.Transaction, error) {
 	query := `
-		SELECT id, user_id, type, amount, account_id, COALESCE(to_account_id, ''), COALESCE(category_id, ''), date, COALESCE(comment, ''), COALESCE(recurring_id, ''), created_at
+		SELECT id, user_id, type, amount, account_id, to_account_id, category_id, date, COALESCE(comment, ''), COALESCE(recurring_id, ''), created_at
 		FROM transactions
 		WHERE id = $1 AND user_id = $2
 	`
 
 	transaction := &entity.Transaction{}
+	var toAccountID, categoryID, recurringID sql.NullString
 	err := r.db.QueryRowContext(ctx, query, id, userID).Scan(
 		&transaction.ID,
 		&transaction.UserID,
 		&transaction.Type,
 		&transaction.Amount,
 		&transaction.AccountID,
-		&transaction.ToAccountID,
-		&transaction.CategoryID,
+		&toAccountID,
+		&categoryID,
 		&transaction.Date,
 		&transaction.Comment,
-		&transaction.RecurringID,
+		&recurringID,
 		&transaction.CreatedAt,
 	)
 
 	if err == sql.ErrNoRows {
 		return nil, domain.ErrNotFound
+	}
+
+	if toAccountID.Valid {
+		transaction.ToAccountID = toAccountID.String
+	}
+	if categoryID.Valid {
+		transaction.CategoryID = categoryID.String
+	}
+	if recurringID.Valid {
+		transaction.RecurringID = recurringID.String
 	}
 
 	return transaction, err
@@ -133,7 +144,7 @@ func (r *TransactionRepository) GetByFilter(ctx context.Context, filter reposito
 	}
 
 	query := `
-		SELECT id, user_id, type, amount, account_id, COALESCE(to_account_id, ''), COALESCE(category_id, ''), date, COALESCE(comment, ''), COALESCE(recurring_id, ''), created_at
+		SELECT id, user_id, type, amount, account_id, to_account_id, category_id, date, COALESCE(comment, ''), COALESCE(recurring_id, ''), created_at
 		FROM transactions
 		WHERE ` + strings.Join(conditions, " AND ") + `
 		ORDER BY date DESC
@@ -148,21 +159,31 @@ func (r *TransactionRepository) GetByFilter(ctx context.Context, filter reposito
 	transactions := make([]*entity.Transaction, 0)
 	for rows.Next() {
 		transaction := &entity.Transaction{}
+		var toAccountID, categoryID, recurringID sql.NullString
 		err := rows.Scan(
 			&transaction.ID,
 			&transaction.UserID,
 			&transaction.Type,
 			&transaction.Amount,
 			&transaction.AccountID,
-			&transaction.ToAccountID,
-			&transaction.CategoryID,
+			&toAccountID,
+			&categoryID,
 			&transaction.Date,
 			&transaction.Comment,
-			&transaction.RecurringID,
+			&recurringID,
 			&transaction.CreatedAt,
 		)
 		if err != nil {
 			return nil, err
+		}
+		if toAccountID.Valid {
+			transaction.ToAccountID = toAccountID.String
+		}
+		if categoryID.Valid {
+			transaction.CategoryID = categoryID.String
+		}
+		if recurringID.Valid {
+			transaction.RecurringID = recurringID.String
 		}
 		transactions = append(transactions, transaction)
 	}
