@@ -77,6 +77,7 @@ func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request)
 
 	result, err := h.updateCategoryUC.Execute(r.Context(), userID, req)
 	if err != nil {
+		log.Printf("[UpdateCategory] error for user %s, category %s: %v", userID, id, err)
 		response.HandleDomainError(w, err)
 		return
 	}
