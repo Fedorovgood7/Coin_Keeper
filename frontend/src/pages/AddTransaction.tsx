@@ -107,6 +107,7 @@ export default function AddTransaction() {
               width: '100%',
               outline: 'none',
               fontFamily: 'var(--font)',
+              color: 'var(--fg)',
             }}
           />
         </div>

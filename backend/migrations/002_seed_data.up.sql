@@ -13,21 +13,21 @@ INSERT INTO accounts (id, user_id, name, type, currency, balance, initial_balanc
 
 -- Insert default categories (user_id = NULL, is_default = true)
 INSERT INTO categories (id, user_id, name, type, color, icon, is_default) VALUES
-('770e8400-e29b-41d4-a716-446655440001', NULL, 'Зарплата', 'income', '#4CAF50', 'money', true),
-('770e8400-e29b-41d4-a716-446655440002', NULL, 'Фриланс', 'income', '#8BC34A', 'laptop', true),
-('770e8400-e29b-41d4-a716-446655440003', NULL, 'Продукты', 'expense', '#FF9800', 'cart', true),
-('770e8400-e29b-41d4-a716-446655440004', NULL, 'Транспорт', 'expense', '#2196F3', 'car', true),
-('770e8400-e29b-41d4-a716-446655440005', NULL, 'Развлечения', 'expense', '#9C27B0', 'gamepad', true),
-('770e8400-e29b-41d4-a716-446655440006', NULL, 'Рестораны', 'expense', '#F44336', 'utensils', true),
-('770e8400-e29b-41d4-a716-446655440007', NULL, 'ЖКХ', 'expense', '#795548', 'home', true),
-('770e8400-e29b-41d4-a716-446655440008', NULL, 'Здоровье', 'expense', '#E91E63', 'heart', true),
-('770e8400-e29b-41d4-a716-446655440009', NULL, 'Одежда', 'expense', '#607D8B', 'shirt', true),
-('770e8400-e29b-41d4-a716-446655440010', NULL, 'Образование', 'expense', '#3F51B5', 'book', true);
+('770e8400-e29b-41d4-a716-446655440001', NULL, 'Зарплата', 'income', '#4CAF50', '💰', true),
+('770e8400-e29b-41d4-a716-446655440002', NULL, 'Фриланс', 'income', '#8BC34A', '💻', true),
+('770e8400-e29b-41d4-a716-446655440003', NULL, 'Продукты', 'expense', '#FF9800', '🛒', true),
+('770e8400-e29b-41d4-a716-446655440004', NULL, 'Транспорт', 'expense', '#2196F3', '🚌', true),
+('770e8400-e29b-41d4-a716-446655440005', NULL, 'Развлечения', 'expense', '#9C27B0', '🎮', true),
+('770e8400-e29b-41d4-a716-446655440006', NULL, 'Рестораны', 'expense', '#F44336', '🍽️', true),
+('770e8400-e29b-41d4-a716-446655440007', NULL, 'ЖКХ', 'expense', '#795548', '🏠', true),
+('770e8400-e29b-41d4-a716-446655440008', NULL, 'Здоровье', 'expense', '#E91E63', '💊', true),
+('770e8400-e29b-41d4-a716-446655440009', NULL, 'Одежда', 'expense', '#607D8B', '👕', true),
+('770e8400-e29b-41d4-a716-446655440010', NULL, 'Образование', 'expense', '#3F51B5', '📚', true);
 
 -- Insert user categories
 INSERT INTO categories (id, user_id, name, type, color, icon, is_default) VALUES
-('770e8400-e29b-41d4-a716-446655440011', '550e8400-e29b-41d4-a716-446655440000', 'Подарки', 'expense', '#FF5722', 'gift', false),
-('770e8400-e29b-41d4-a716-446655440012', '550e8400-e29b-41d4-a716-446655440000', 'Инвестиции', 'expense', '#009688', 'chart', false);
+('770e8400-e29b-41d4-a716-446655440011', '550e8400-e29b-41d4-a716-446655440000', 'Подарки', 'expense', '#FF5722', '🎁', false),
+('770e8400-e29b-41d4-a716-446655440012', '550e8400-e29b-41d4-a716-446655440000', 'Инвестиции', 'expense', '#009688', '📈', false);
 
 -- Insert transactions for current month
 INSERT INTO transactions (id, user_id, type, amount, account_id, category_id, date, comment) VALUES
