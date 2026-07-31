@@ -972,11 +972,13 @@ input, select, textarea {
 .sidebar-mobile {
   display: flex;
   position: fixed;
-  bottom: 0;
+  top: 50%;
+  transform: translateY(-50%);
   left: 0;
   right: 0;
   background: var(--bg);
   border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
   padding: 8px 0;
   z-index: 100;
   justify-content: space-around;

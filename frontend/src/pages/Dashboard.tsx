@@ -166,11 +166,7 @@ export default function Dashboard() {
           </Link>
         </div>
         <div className="recurring-list-desktop">
-          {upcomingRecurring.length === 0 ? (
-            <div className="empty-state" style={{ padding: 24 }}>
-              <div style={{ fontSize: 13, color: 'var(--muted)' }}>Нет регулярных платежей</div>
-            </div>
-          ) : (
+          {upcomingRecurring.length > 0 && (
             upcomingRecurring.map((r) => {
               const cat = categories.find((c) => c.id === r.categoryId);
               const nextDate = new Date(r.nextDate);
