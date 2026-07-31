@@ -90,7 +90,7 @@ export const transactionsService = {
     amount: number;
     accountId: string;
     toAccountId?: string;
-    categoryId: string;
+    categoryId?: string;
     date: string;
     comment?: string;
   }): Promise<Transaction> {

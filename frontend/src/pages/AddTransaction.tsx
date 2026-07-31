@@ -48,7 +48,7 @@ export default function AddTransaction() {
         amount: parseFloat(amount),
         accountId,
         toAccountId: type === 'transfer' ? targetAccountId : undefined,
-        categoryId: type !== 'transfer' ? categoryId : '',
+        categoryId: type !== 'transfer' ? categoryId : undefined,
         date: new Date(date).toISOString(),
         comment,
       });

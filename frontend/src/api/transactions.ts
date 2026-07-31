@@ -27,19 +27,30 @@ export async function createTransaction(data: {
   amount: number;
   accountId: string;
   toAccountId?: string;
-  categoryId: string;
+  categoryId?: string;
   date: string;
   comment?: string;
 }) {
-  const response = await post<ApiResponse<Transaction>>('/transactions', {
+  const body: Record<string, unknown> = {
     type: data.type,
     amount: data.amount,
     account_id: data.accountId,
-    to_account_id: data.toAccountId,
-    category_id: data.categoryId,
     date: data.date,
-    comment: data.comment,
-  });
+  };
+  
+  if (data.toAccountId) {
+    body.to_account_id = data.toAccountId;
+  }
+  
+  if (data.categoryId) {
+    body.category_id = data.categoryId;
+  }
+  
+  if (data.comment) {
+    body.comment = data.comment;
+  }
+
+  const response = await post<ApiResponse<Transaction>>('/transactions', body);
   return response.data;
 }
 
