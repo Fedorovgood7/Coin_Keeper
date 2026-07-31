@@ -10,6 +10,7 @@ export default function Budget() {
     categories,
     accounts,
     loadBudget,
+    loadCategoryLimits,
     loadCategories,
     loadAccounts,
     loadGoals,
@@ -34,6 +35,7 @@ export default function Budget() {
 
   useEffect(() => {
     loadBudget(month);
+    loadCategoryLimits(month);
     loadCategories();
     loadAccounts();
     loadGoals();

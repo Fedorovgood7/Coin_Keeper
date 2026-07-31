@@ -2,11 +2,16 @@ import { useState, useEffect } from 'react';
 import { useStore } from '@/store';
 
 export default function Categories() {
-  const { categories, loadCategories, updateCategory } = useStore();
+  const { categories, loadCategories, updateCategory, createCategory } = useStore();
   const [showModal, setShowModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [color, setColor] = useState('#4285f4');
   const [icon, setIcon] = useState('');
+  const [newName, setNewName] = useState('');
+  const [newType, setNewType] = useState<'expense' | 'income'>('expense');
+  const [newColor, setNewColor] = useState('#4285f4');
+  const [newIcon, setNewIcon] = useState('📦');
 
   useEffect(() => {
     loadCategories();
@@ -30,6 +35,20 @@ export default function Categories() {
     setShowModal(false);
   };
 
+  const openCreate = () => {
+    setNewName('');
+    setNewType('expense');
+    setNewColor('#4285f4');
+    setNewIcon('📦');
+    setShowCreateModal(true);
+  };
+
+  const handleCreate = async () => {
+    if (!newName.trim()) return;
+    await createCategory({ name: newName, type: newType, color: newColor, icon: newIcon });
+    setShowCreateModal(false);
+  };
+
   const ICONS = ['📦', '🍕', '🛒', '🎬', '💊', '🛍️', '☕', '👕', '🏋️', '💼', '💻', '🎁', '📈', '🎯', '🍔', '🚌', '💳', '🏦', '📱', '🏠'];
   const COLORS = ['#ff7043', '#4285f4', '#e91e63', '#4caf50', '#7e57c2', '#78909c', '#26a69a', '#f4b400', '#9c27b0', '#00bcd4'];
 
@@ -38,6 +57,11 @@ export default function Categories() {
       <div className="container">
         <div className="header">
           <h1>Категории</h1>
+          <div className="toolbar">
+            <button className="toolbar-btn toolbar-btn-primary" onClick={openCreate}>
+              + Добавить
+            </button>
+          </div>
         </div>
 
         <div className="section-title">
@@ -119,6 +143,87 @@ export default function Categories() {
 
             <button className="btn btn-primary" style={{ width: '100%' }} onClick={handleSave}>
               Сохранить
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showCreateModal && (
+        <div className="modal active" onClick={() => setShowCreateModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-title">Новая категория</div>
+              <button className="modal-close" onClick={() => setShowCreateModal(false)}>
+                
+              </button>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Название</label>
+              <input
+                className="form-input"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder="Например: Кафе"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Тип</label>
+              <div className="grid-2">
+                <button
+                  className={`btn ${newType === 'expense' ? 'btn-primary' : 'btn-secondary'}`}
+                  onClick={() => setNewType('expense')}
+                >
+                  Расход
+                </button>
+                <button
+                  className={`btn ${newType === 'income' ? 'btn-primary' : 'btn-secondary'}`}
+                  onClick={() => setNewType('income')}
+                >
+                  Доход
+                </button>
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Иконка</label>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {ICONS.map((e) => (
+                  <button
+                    key={e}
+                    className={`btn ${newIcon === e ? 'btn-primary' : 'btn-secondary'}`}
+                    onClick={() => setNewIcon(e)}
+                    style={{ padding: 8, fontSize: 18 }}
+                  >
+                    {e}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Цвет</label>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {COLORS.map((c) => (
+                  <div
+                    key={c}
+                    onClick={() => setNewColor(c)}
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: '50%',
+                      background: c,
+                      cursor: 'pointer',
+                      border: newColor === c ? '3px solid var(--fg)' : '3px solid transparent',
+                    }}
+                  ></div>
+                ))}
+              </div>
+            </div>
+
+            <button className="btn btn-primary" style={{ width: '100%' }} onClick={handleCreate}>
+              Создать
             </button>
           </div>
         </div>

@@ -10,6 +10,11 @@ export async function getMonthlyBudget(month: string) {
   return response.data;
 }
 
+export async function getCategoryLimits(month: string) {
+  const response = await get<ApiResponse<CategoryLimit[]>>('/budget/category-limits', { month });
+  return response.data;
+}
+
 export async function setCategoryLimit(categoryId: string, month: string, limit: number) {
   const response = await post<ApiResponse<CategoryLimit>>('/budget/category-limit', {
     category_id: categoryId,

@@ -2,8 +2,8 @@
   --bg: #ffffff;
   --surface: #f5f5f5;
   --fg: #000000;
-  --muted: #8c8c8c;
-  --border: #dbdbdb;
+  --muted: #666666;
+  --border: #d0d0d0;
   --accent: #15191e;
   --accent-secondary: #ff5900;
   --success: #1a8d3e;
@@ -18,6 +18,8 @@
   --cat-grey: #78909c;
   --radius: 8px;
   --font: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* Telegram theme support */
@@ -26,8 +28,8 @@
     --bg: #1c1c1e;
     --surface: #2c2c2e;
     --fg: #ffffff;
-    --muted: #8e8e93;
-    --border: #38383a;
+    --muted: #a1a1a6;
+    --border: #48484a;
   }
 }
 
@@ -128,11 +130,12 @@ input, select, textarea {
   border-radius: var(--radius);
   padding: 16px;
   margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
 }
 
 .card-title {
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -189,8 +192,9 @@ input, select, textarea {
 
 .list-item-title {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   margin-bottom: 2px;
+  color: var(--fg);
 }
 
 .list-item-subtitle {
@@ -279,7 +283,7 @@ input, select, textarea {
 .form-label {
   display: block;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -674,8 +678,8 @@ input, select, textarea {
 /* ===== DASHBOARD PAGE ===== */
 
 .balance-card {
-  background: var(--accent);
-  color: var(--bg);
+  background: linear-gradient(135deg, #15191e 0%, #2d3748 100%);
+  color: #ffffff;
   border-radius: var(--radius);
   padding: 24px;
   margin-bottom: 16px;
@@ -683,6 +687,7 @@ input, select, textarea {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  box-shadow: var(--shadow-md);
 }
 
 .balance-label {
@@ -738,11 +743,12 @@ input, select, textarea {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 16px;
+  box-shadow: var(--shadow-sm);
 }
 
 .stat-label {
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -764,12 +770,13 @@ input, select, textarea {
 }
 
 .safe-to-spend {
-  background: rgba(26, 141, 62, 0.08);
-  border: 1px solid rgba(26, 141, 62, 0.2);
+  background: rgba(26, 141, 62, 0.12);
+  border: 1px solid rgba(26, 141, 62, 0.3);
   border-radius: var(--radius);
   padding: 16px;
   text-align: center;
   margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
 }
 
 .safe-label {
@@ -855,6 +862,7 @@ input, select, textarea {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
 }
 
 .recurring-icon {
@@ -941,7 +949,9 @@ input, select, textarea {
     padding: 24px 32px;
     min-height: 100vh;
     background: var(--bg);
-    box-shadow: 0 0 40px rgba(0,0,0,0.04);
+    box-shadow: 0 0 40px rgba(0,0,0,0.06);
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
   }
 
   .header {

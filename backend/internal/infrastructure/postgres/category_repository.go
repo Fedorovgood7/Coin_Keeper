@@ -167,7 +167,7 @@ func (r *CategoryRepository) Update(ctx context.Context, category *entity.Catego
 	query := `
 		UPDATE categories
 		SET name = $1, color = $2, icon = $3, updated_at = $4
-		WHERE id = $5 AND user_id = $6
+		WHERE id = $5 AND (user_id = $6 OR is_default = true)
 	`
 
 	_, err := r.db.ExecContext(

@@ -50,6 +50,7 @@ interface AppState {
     type?: string;
   }) => Promise<void>;
   loadBudget: (month: string) => Promise<void>;
+  loadCategoryLimits: (month: string) => Promise<void>;
   loadGoals: () => Promise<void>;
   loadRecurring: () => Promise<void>;
 
@@ -58,6 +59,7 @@ interface AppState {
   archiveAccount: (id: string) => Promise<void>;
 
   updateCategory: (id: string, data: { color?: string; icon?: string }) => Promise<void>;
+  createCategory: (data: { name: string; type: string; color?: string; icon?: string }) => Promise<void>;
 
   createTransaction: (data: {
     type: string;
@@ -200,6 +202,15 @@ export const useStore = create<AppState>()((set, get) => ({
     }
   },
 
+  loadCategoryLimits: async (month: string) => {
+    try {
+      const categoryLimits = await budgetService.getCategoryLimits(month);
+      set({ categoryLimits });
+    } catch (e) {
+      set({ error: (e as Error).message });
+    }
+  },
+
   loadGoals: async () => {
     try {
       const goals = await goalsService.getAll();
@@ -266,6 +277,18 @@ export const useStore = create<AppState>()((set, get) => ({
     }
   },
 
+  createCategory: async (data) => {
+    set({ loading: true, error: null });
+    try {
+      await categoriesService.create(data);
+      await get().loadCategories();
+      set({ loading: false });
+    } catch (e) {
+      set({ error: (e as Error).message, loading: false });
+      throw e;
+    }
+  },
+
   createTransaction: async (data) => {
     set({ loading: true, error: null });
     try {
@@ -306,7 +329,7 @@ export const useStore = create<AppState>()((set, get) => ({
     set({ loading: true, error: null });
     try {
       await budgetService.setCategoryLimit(categoryId, month, limit);
-      await get().loadBudget(month);
+      await get().loadCategoryLimits(month);
       set({ loading: false });
     } catch (e) {
       set({ error: (e as Error).message, loading: false });

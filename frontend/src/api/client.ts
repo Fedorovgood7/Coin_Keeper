@@ -22,6 +22,24 @@ export function removeToken(): void {
   localStorage.removeItem('coinkeeper-token');
 }
 
+function snakeToCamel(str: string): string {
+  return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+}
+
+function transformKeys(obj: unknown): unknown {
+  if (Array.isArray(obj)) {
+    return obj.map(transformKeys);
+  }
+  if (obj !== null && typeof obj === 'object' && !(obj instanceof Date)) {
+    const transformed: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
+      transformed[snakeToCamel(key)] = transformKeys(value);
+    }
+    return transformed;
+  }
+  return obj;
+}
+
 async function request<T>(
   endpoint: string,
   options: RequestInit = {}
@@ -50,7 +68,8 @@ async function request<T>(
     return {} as T;
   }
 
-  return response.json();
+  const json = await response.json();
+  return transformKeys(json) as T;
 }
 
 export function get<T>(endpoint: string, params?: Record<string, string>): Promise<T> {

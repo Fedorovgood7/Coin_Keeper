@@ -14,17 +14,20 @@ import (
 type BudgetHandler struct {
 	getMonthlyBudgetUC        *budget.GetMonthlyBudgetUseCase
 	setCategoryLimitUC        *budget.SetCategoryLimitUseCase
+	getCategoryLimitsUC       *budget.GetCategoryLimitsUseCase
 	calculateSafeDailyAmountUC *budget.CalculateSafeDailyAmountUseCase
 }
 
 func NewBudgetHandler(
 	getMonthlyBudgetUC *budget.GetMonthlyBudgetUseCase,
 	setCategoryLimitUC *budget.SetCategoryLimitUseCase,
+	getCategoryLimitsUC *budget.GetCategoryLimitsUseCase,
 	calculateSafeDailyAmountUC *budget.CalculateSafeDailyAmountUseCase,
 ) *BudgetHandler {
 	return &BudgetHandler{
 		getMonthlyBudgetUC:        getMonthlyBudgetUC,
 		setCategoryLimitUC:        setCategoryLimitUC,
+		getCategoryLimitsUC:       getCategoryLimitsUC,
 		calculateSafeDailyAmountUC: calculateSafeDailyAmountUC,
 	}
 }
@@ -82,6 +85,23 @@ func (h *BudgetHandler) GetSafeDailyAmount(w http.ResponseWriter, r *http.Reques
 	}
 
 	result, err := h.calculateSafeDailyAmountUC.Execute(r.Context(), userID, month)
+	if err != nil {
+		response.HandleDomainError(w, err)
+		return
+	}
+
+	response.OK(w, result)
+}
+
+func (h *BudgetHandler) GetCategoryLimits(w http.ResponseWriter, r *http.Request) {
+	userID := middleware.GetUserID(r.Context())
+
+	month := r.URL.Query().Get("month")
+	if month == "" {
+		month = time.Now().Format("2006-01")
+	}
+
+	result, err := h.getCategoryLimitsUC.Execute(r.Context(), userID, month)
 	if err != nil {
 		response.HandleDomainError(w, err)
 		return

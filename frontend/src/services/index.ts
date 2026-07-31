@@ -65,6 +65,10 @@ export const categoriesService = {
     return categoriesApi.getCategories();
   },
 
+  async create(data: { name: string; type: string; color?: string; icon?: string }): Promise<Category> {
+    return categoriesApi.createCategory(data);
+  },
+
   async update(id: string, data: { color?: string; icon?: string }): Promise<Category> {
     return categoriesApi.updateCategory(id, data);
   },
@@ -110,6 +114,10 @@ export const transactionsService = {
 export const budgetService = {
   async getMonthly(month: string): Promise<MonthlyBudget> {
     return budgetApi.getMonthlyBudget(month);
+  },
+
+  async getCategoryLimits(month: string): Promise<CategoryLimit[]> {
+    return budgetApi.getCategoryLimits(month);
   },
 
   async setCategoryLimit(categoryId: string, month: string, limit: number): Promise<CategoryLimit> {
