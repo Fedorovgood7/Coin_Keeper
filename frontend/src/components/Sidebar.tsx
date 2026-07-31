@@ -47,7 +47,14 @@ export default function Sidebar() {
       <div className="sidebar-footer">
         {user && (
           <div className="sidebar-user">
-            {user.name || user.email}
+            {user.avatarUrl && (
+              <img
+                src={user.avatarUrl}
+                alt={user.name || user.email}
+                className="sidebar-user-avatar"
+              />
+            )}
+            <span>{user.name || user.email}</span>
           </div>
         )}
         <button className="sidebar-logout" onClick={handleLogout}>

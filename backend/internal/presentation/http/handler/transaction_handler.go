@@ -43,8 +43,18 @@ func (h *TransactionHandler) CreateTransaction(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	if req.Type == "" || req.Amount <= 0 || req.AccountID == "" || req.CategoryID == "" {
-		response.BadRequest(w, "Type, amount, account_id and category_id are required")
+	if req.Type == "" || req.Amount <= 0 || req.AccountID == "" {
+		response.BadRequest(w, "Type, amount and account_id are required")
+		return
+	}
+
+	if req.Type != "transfer" && req.CategoryID == "" {
+		response.BadRequest(w, "Category_id is required for income and expense")
+		return
+	}
+
+	if req.Type == "transfer" && req.ToAccountID == "" {
+		response.BadRequest(w, "To_account_id is required for transfer")
 		return
 	}
 
