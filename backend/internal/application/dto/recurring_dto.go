@@ -13,6 +13,18 @@ type CreateRecurringRequest struct {
 	Comment     string    `json:"comment,omitempty"`
 }
 
+type UpdateRecurringRequest struct {
+	Type        *string    `json:"type,omitempty"`
+	Amount      *float64   `json:"amount,omitempty"`
+	AccountID   *string    `json:"account_id,omitempty"`
+	ToAccountID *string    `json:"to_account_id,omitempty"`
+	CategoryID  *string    `json:"category_id,omitempty"`
+	Periodicity *string    `json:"periodicity,omitempty"`
+	NextDate    *time.Time `json:"next_date,omitempty"`
+	Comment     *string    `json:"comment,omitempty"`
+	IsActive    *bool      `json:"is_active,omitempty"`
+}
+
 type RecurringResponse struct {
 	ID          string    `json:"id"`
 	Type        string    `json:"type"`

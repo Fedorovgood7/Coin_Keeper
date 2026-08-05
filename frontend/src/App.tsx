@@ -10,6 +10,7 @@ import Budget from '@/pages/Budget';
 import Analytics from '@/pages/Analytics';
 import Categories from '@/pages/Categories';
 import AddTransaction from '@/pages/AddTransaction';
+import EditTransaction from '@/pages/EditTransaction';
 import './styles.css';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -120,6 +121,16 @@ export default function App() {
           <ProtectedRoute>
             <AppLayout>
               <AddTransaction />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/edit-transaction/:id"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <EditTransaction />
             </AppLayout>
           </ProtectedRoute>
         }

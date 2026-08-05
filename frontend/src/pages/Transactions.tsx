@@ -112,19 +112,34 @@ export default function Transactions() {
                     {formatMoney(tx.amount)}
                   </div>
                   <button
+                    onClick={() => navigate(`/edit-transaction/${tx.id}`)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      fontSize: 16,
+                      cursor: 'pointer',
+                      color: 'var(--accent-secondary)',
+                      padding: '4px 8px',
+                    }}
+                    title="Редактировать"
+                  >
+                    ✏️
+                  </button>
+                  <button
                     onClick={() => {
                       if (confirm('Удалить операцию?')) deleteTransaction(tx.id);
                     }}
                     style={{
                       background: 'none',
                       border: 'none',
-                      fontSize: 18,
+                      fontSize: 16,
                       cursor: 'pointer',
                       color: 'var(--danger)',
                       padding: '4px 8px',
                     }}
+                    title="Удалить"
                   >
-                    
+                    🗑️
                   </button>
                 </div>
               );

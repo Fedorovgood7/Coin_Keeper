@@ -83,6 +83,7 @@ interface AppState {
 
   createGoal: (data: { title: string; targetAmount: number; deadline: string }) => Promise<void>;
   topupGoal: (id: string, amount: number, accountId: string) => Promise<void>;
+  deleteGoal: (id: string) => Promise<void>;
 
   createRecurring: (data: {
     type: string;
@@ -94,6 +95,18 @@ interface AppState {
     nextDate: string;
     comment?: string;
   }) => Promise<void>;
+  updateRecurring: (id: string, data: {
+    type?: string;
+    amount?: number;
+    accountId?: string;
+    toAccountId?: string;
+    categoryId?: string;
+    periodicity?: string;
+    nextDate?: string;
+    comment?: string;
+    isActive?: boolean;
+  }) => Promise<void>;
+  deleteRecurring: (id: string) => Promise<void>;
 
   clearError: () => void;
 }
@@ -374,10 +387,46 @@ export const useStore = create<AppState>()((set, get) => ({
     }
   },
 
+  deleteGoal: async (id) => {
+    set({ loading: true, error: null });
+    try {
+      await goalsService.delete(id);
+      await get().loadGoals();
+      set({ loading: false });
+    } catch (e) {
+      set({ error: (e as Error).message, loading: false });
+      throw e;
+    }
+  },
+
   createRecurring: async (data) => {
     set({ loading: true, error: null });
     try {
       await recurringService.create(data);
+      await get().loadRecurring();
+      set({ loading: false });
+    } catch (e) {
+      set({ error: (e as Error).message, loading: false });
+      throw e;
+    }
+  },
+
+  updateRecurring: async (id, data) => {
+    set({ loading: true, error: null });
+    try {
+      await recurringService.update(id, data);
+      await get().loadRecurring();
+      set({ loading: false });
+    } catch (e) {
+      set({ error: (e as Error).message, loading: false });
+      throw e;
+    }
+  },
+
+  deleteRecurring: async (id) => {
+    set({ loading: true, error: null });
+    try {
+      await recurringService.delete(id);
       await get().loadRecurring();
       set({ loading: false });
     } catch (e) {

@@ -137,26 +137,29 @@ export default function Dashboard() {
             <div style={{ fontSize: 13, color: 'var(--muted)' }}>Нет данных</div>
           </div>
         ) : (
-          (dashboard.topCategories || []).slice(0, 5).map((cat) => (
-            <div className="card" key={cat.categoryId} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div
-                className="icon-circle"
-                style={{ background: 'var(--border)', width: 40, height: 40, fontSize: 18 }}
-              >
-                📦
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 600 }}>{cat.name}</div>
-                <div className="progress-bar" style={{ margin: '8px 0' }}>
-                  <div className="progress-fill" style={{ width: `${cat.percent}%` }}></div>
+          (dashboard.topCategories || []).slice(0, 5).map((cat) => {
+            const category = categories.find((c) => c.id === cat.categoryId);
+            return (
+              <div className="card" key={cat.categoryId} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div
+                  className="icon-circle"
+                  style={{ background: category?.color || 'var(--border)', width: 40, height: 40, fontSize: 18 }}
+                >
+                  {category?.icon || '📦'}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600 }}>{cat.name}</div>
+                  <div className="progress-bar" style={{ margin: '8px 0' }}>
+                    <div className="progress-fill" style={{ width: `${cat.percent}%` }}></div>
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: 14, fontWeight: 700 }}>{formatMoney(cat.amount)}</div>
+                  <div style={{ fontSize: 12, color: 'var(--muted)' }}>{Math.round(cat.percent)}%</div>
                 </div>
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: 14, fontWeight: 700 }}>{formatMoney(cat.amount)}</div>
-                <div style={{ fontSize: 12, color: 'var(--muted)' }}>{Math.round(cat.percent)}%</div>
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
 
         <div className="section-title" style={{ marginTop: 24 }}>

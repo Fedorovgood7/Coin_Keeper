@@ -134,3 +134,9 @@ func (r *GoalRepository) Update(ctx context.Context, goal *entity.SavingsGoal) e
 
 	return err
 }
+
+func (r *GoalRepository) Delete(ctx context.Context, id string, userID string) error {
+	query := `DELETE FROM savings_goals WHERE id = $1 AND user_id = $2`
+	_, err := r.db.ExecContext(ctx, query, id, userID)
+	return err
+}

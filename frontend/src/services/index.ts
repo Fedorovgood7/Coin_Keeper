@@ -165,6 +165,10 @@ export const goalsService = {
   async topup(id: string, amount: number, accountId: string): Promise<Goal> {
     return goalsApi.topupGoal(id, amount, accountId);
   },
+
+  async delete(id: string): Promise<void> {
+    return goalsApi.deleteGoal(id);
+  },
 };
 
 export const recurringService = {
@@ -183,6 +187,24 @@ export const recurringService = {
     comment?: string;
   }): Promise<RecurringPayment> {
     return recurringApi.createRecurring(data);
+  },
+
+  async update(id: string, data: {
+    type?: string;
+    amount?: number;
+    accountId?: string;
+    toAccountId?: string;
+    categoryId?: string;
+    periodicity?: string;
+    nextDate?: string;
+    comment?: string;
+    isActive?: boolean;
+  }): Promise<RecurringPayment> {
+    return recurringApi.updateRecurring(id, data);
+  },
+
+  async delete(id: string): Promise<void> {
+    return recurringApi.deleteRecurring(id);
   },
 
   async generate(): Promise<void> {

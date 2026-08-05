@@ -69,7 +69,7 @@ export default function Login() {
             <span>Планирование бюджета</span>
           </div>
           <div className="login-feature">
-            <div className="login-feature-icon"></div>
+            <div className="login-feature-icon">📈</div>
             <span>Аналитика и графики</span>
           </div>
           <div className="login-feature">

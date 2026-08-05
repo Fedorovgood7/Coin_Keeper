@@ -1,0 +1,229 @@
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useStore } from '@/store';
+import { formatMoney } from '@/utils';
+
+export default function EditTransaction() {
+  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const { transactions, accounts, categories, loadTransactions, updateTransaction, error, clearError } = useStore();
+  
+  const [type, setType] = useState<'expense' | 'income' | 'transfer'>('expense');
+  const [amount, setAmount] = useState('');
+  const [accountId, setAccountId] = useState('');
+  const [targetAccountId, setTargetAccountId] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [date, setDate] = useState('');
+  const [comment, setComment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    loadTransactions();
+  }, []);
+
+  useEffect(() => {
+    if (id && transactions.length > 0) {
+      const tx = transactions.find((t) => t.id === id);
+      if (tx) {
+        setType(tx.type);
+        setAmount(tx.amount.toString());
+        setAccountId(tx.accountId);
+        setTargetAccountId(tx.toAccountId || '');
+        setCategoryId(tx.categoryId || '');
+        setDate(tx.date.split('T')[0]);
+        setComment(tx.comment || '');
+      }
+    }
+  }, [id, transactions]);
+
+  const currentCategories = categories.filter((c) => c.type === type);
+
+  const handleSubmit = async () => {
+    if (!amount || parseFloat(amount) <= 0) return;
+    if (type !== 'transfer' && !categoryId) return;
+    if (type === 'transfer' && !targetAccountId) return;
+    if (!id) return;
+
+    setSubmitting(true);
+    clearError();
+    try {
+      await updateTransaction(id, {
+        amount: parseFloat(amount),
+        categoryId: type !== 'transfer' ? categoryId : undefined,
+        date: new Date(date).toISOString(),
+        comment,
+      });
+      navigate('/transactions');
+    } catch (e) {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="page-wrapper">
+      <div className="container">
+        <div className="header">
+          <button
+            className="toolbar-btn"
+            onClick={() => navigate(-1)}
+            style={{ background: 'none', border: 'none', fontSize: 20, color: 'var(--fg)' }}
+          >
+            ←
+          </button>
+          <h1>Редактирование операции</h1>
+          <div style={{ width: 40 }}></div>
+        </div>
+
+        {error && (
+          <div style={{ background: 'rgba(214, 48, 48, 0.15)', border: '1px solid var(--danger)', color: '#ff6b6b', padding: '10px 14px', borderRadius: 'var(--radius)', marginBottom: 16, fontSize: 13 }}>
+            {error}
+          </div>
+        )}
+
+        <div className="tabs">
+          {(['expense', 'income', 'transfer'] as const).map((t) => (
+            <button
+              key={t}
+              className={`tab ${type === t ? 'active' : ''}`}
+              onClick={() => setType(t)}
+              disabled
+            >
+              {t === 'expense' ? 'Расходы' : t === 'income' ? 'Доходы' : 'Перевод'}
+            </button>
+          ))}
+        </div>
+
+        <div className="card" style={{ textAlign: 'center', marginBottom: 24 }}>
+          <div className="card-title">Сумма</div>
+          <input
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="0"
+            style={{
+              fontSize: 36,
+              fontWeight: 700,
+              textAlign: 'center',
+              border: 'none',
+              background: 'none',
+              width: '100%',
+              outline: 'none',
+              fontFamily: 'var(--font)',
+              color: 'var(--fg)',
+            }}
+          />
+        </div>
+
+        {type !== 'transfer' && (
+          <>
+            <div className="section-title">
+              <span>Категория</span>
+            </div>
+            <div className="grid-3" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 24 }}>
+              {currentCategories.map((cat) => (
+                <button
+                  key={cat.id}
+                  className={`btn ${categoryId === cat.id ? 'btn-primary' : 'btn-secondary'}`}
+                  onClick={() => setCategoryId(cat.id)}
+                  style={{ padding: 12, flexDirection: 'column', gap: 4 }}
+                >
+                  <div style={{ fontSize: 24 }}>{cat.icon || '📦'}</div>
+                  <div style={{ fontSize: 11 }}>{cat.name}</div>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
+        {type === 'transfer' && (
+          <>
+            <div className="form-group">
+              <label className="form-label">Откуда</label>
+              <select
+                className="form-input"
+                value={accountId}
+                onChange={(e) => setAccountId(e.target.value)}
+                disabled
+              >
+                {accounts
+                  .filter((a) => !a.isArchived)
+                  .map((acc) => (
+                    <option key={acc.id} value={acc.id}>
+                      {acc.name} ({formatMoney(acc.balance)})
+                    </option>
+                  ))}
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Куда</label>
+              <select
+                className="form-input"
+                value={targetAccountId}
+                onChange={(e) => setTargetAccountId(e.target.value)}
+              >
+                {accounts
+                  .filter((a) => !a.isArchived && a.id !== accountId)
+                  .map((acc) => (
+                    <option key={acc.id} value={acc.id}>
+                      {acc.name} ({formatMoney(acc.balance)})
+                    </option>
+                  ))}
+              </select>
+            </div>
+          </>
+        )}
+
+        {type !== 'transfer' && (
+          <div className="form-group">
+            <label className="form-label">Счёт</label>
+            <select
+              className="form-input"
+              value={accountId}
+              onChange={(e) => setAccountId(e.target.value)}
+              disabled
+            >
+              {accounts
+                .filter((a) => !a.isArchived)
+                .map((acc) => (
+                  <option key={acc.id} value={acc.id}>
+                    {acc.name} ({formatMoney(acc.balance)})
+                  </option>
+                ))}
+            </select>
+          </div>
+        )}
+
+        <div className="form-group">
+          <label className="form-label">Дата</label>
+          <input
+            className="form-input"
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Комментарий</label>
+          <input
+            className="form-input"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="Комментарий (необязательно)"
+          />
+        </div>
+
+        <button
+          className="btn btn-primary"
+          style={{ width: '100%', padding: 16 }}
+          onClick={handleSubmit}
+          disabled={!amount || parseFloat(amount) <= 0 || (type !== 'transfer' && !categoryId) || submitting}
+        >
+          {submitting ? 'Сохранение...' : 'Сохранить'}
+        </button>
+
+        <div className="bottom-spacer"></div>
+      </div>
+    </div>
+  );
+}

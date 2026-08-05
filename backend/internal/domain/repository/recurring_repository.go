@@ -11,4 +11,5 @@ type RecurringRepository interface {
 	GetByUserID(ctx context.Context, userID string) ([]*entity.RecurringPayment, error)
 	GetDuePayments(ctx context.Context) ([]*entity.RecurringPayment, error)
 	Update(ctx context.Context, recurring *entity.RecurringPayment) error
+	Delete(ctx context.Context, id string, userID string) error
 }

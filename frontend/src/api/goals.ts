@@ -1,4 +1,4 @@
-import { get, post } from './client';
+import { get, post, del } from './client';
 import type { Goal } from '@/types';
 
 interface ApiResponse<T> {
@@ -29,4 +29,8 @@ export async function topupGoal(id: string, amount: number, accountId: string) {
     account_id: accountId,
   });
   return response.data;
+}
+
+export async function deleteGoal(id: string) {
+  await del<void>(`/goals/${id}`);
 }

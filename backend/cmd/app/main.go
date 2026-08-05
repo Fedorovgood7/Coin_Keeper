@@ -108,10 +108,13 @@ func main() {
 	createRecurringUC := recurring.NewCreateRecurringUseCase(recurringRepo)
 	getRecurringPaymentsUC := recurring.NewGetRecurringPaymentsUseCase(recurringRepo)
 	generateTransactionsUC := recurring.NewGenerateTransactionsUseCase(recurringRepo, transactionRepo, accountRepo)
+	updateRecurringUC := recurring.NewUpdateRecurringUseCase(recurringRepo)
+	deleteRecurringUC := recurring.NewDeleteRecurringUseCase(recurringRepo)
 
 	createGoalUC := goal.NewCreateGoalUseCase(goalRepo)
 	getGoalsUC := goal.NewGetGoalsUseCase(goalRepo)
 	topupGoalUC := goal.NewTopupGoalUseCase(goalRepo, accountRepo)
+	deleteGoalUC := goal.NewDeleteGoalUseCase(goalRepo)
 
 	exportTransactionsCSVUC := export.NewExportTransactionsCSVUseCase(transactionRepo)
 
@@ -123,8 +126,8 @@ func main() {
 		Budget:      handler.NewBudgetHandler(getMonthlyBudgetUC, setMonthlyBudgetUC, setCategoryLimitUC, getCategoryLimitsUC, calculateSafeDailyAmountUC),
 		Dashboard:   handler.NewDashboardHandler(getDashboardDataUC),
 		Analytics:   handler.NewAnalyticsHandler(getCategoryStatsUC, getDailyStatsUC, getIncomeExpenseComparisonUC),
-		Recurring:   handler.NewRecurringHandler(createRecurringUC, getRecurringPaymentsUC, generateTransactionsUC),
-		Goal:        handler.NewGoalHandler(createGoalUC, getGoalsUC, topupGoalUC),
+		Recurring:   handler.NewRecurringHandler(createRecurringUC, getRecurringPaymentsUC, generateTransactionsUC, updateRecurringUC, deleteRecurringUC),
+		Goal:        handler.NewGoalHandler(createGoalUC, getGoalsUC, topupGoalUC, deleteGoalUC),
 		Export:      handler.NewExportHandler(exportTransactionsCSVUC),
 	}
 

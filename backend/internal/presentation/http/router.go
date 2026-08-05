@@ -69,10 +69,13 @@ func NewRouter(sessionService service.SessionService, handlers *Handlers) http.H
 	protected.HandleFunc("/recurring", handlers.Recurring.CreateRecurring).Methods(http.MethodPost, http.MethodOptions)
 	protected.HandleFunc("/recurring", handlers.Recurring.GetRecurringPayments).Methods(http.MethodGet, http.MethodOptions)
 	protected.HandleFunc("/recurring/generate", handlers.Recurring.GenerateTransactions).Methods(http.MethodPost, http.MethodOptions)
+	protected.HandleFunc("/recurring/{id}", handlers.Recurring.UpdateRecurring).Methods(http.MethodPatch, http.MethodOptions)
+	protected.HandleFunc("/recurring/{id}", handlers.Recurring.DeleteRecurring).Methods(http.MethodDelete, http.MethodOptions)
 
 	protected.HandleFunc("/goals", handlers.Goal.CreateGoal).Methods(http.MethodPost, http.MethodOptions)
 	protected.HandleFunc("/goals", handlers.Goal.GetGoals).Methods(http.MethodGet, http.MethodOptions)
 	protected.HandleFunc("/goals/{id}/topup", handlers.Goal.TopupGoal).Methods(http.MethodPost, http.MethodOptions)
+	protected.HandleFunc("/goals/{id}", handlers.Goal.DeleteGoal).Methods(http.MethodDelete, http.MethodOptions)
 
 	protected.HandleFunc("/export/csv", handlers.Export.ExportCSV).Methods(http.MethodGet, http.MethodOptions)
 

@@ -20,7 +20,10 @@ export default function Budget() {
     setCategoryLimit,
     createGoal,
     topupGoal,
+    deleteGoal,
     createRecurring,
+    updateRecurring,
+    deleteRecurring,
   } = useStore();
 
   const [showLimitModal, setShowLimitModal] = useState(false);
@@ -292,6 +295,15 @@ export default function Budget() {
                     Пополнить
                   </button>
                 )}
+                <button
+                  className="btn btn-danger"
+                  style={{ width: '100%', marginTop: 8 }}
+                  onClick={() => {
+                    if (confirm('Удалить цель?')) deleteGoal(g.id);
+                  }}
+                >
+                  Удалить цель
+                </button>
               </div>
             );
           })
@@ -327,6 +339,26 @@ export default function Budget() {
                       {r.type === 'income' ? '+' : '-'}{formatMoney(r.amount)}
                     </div>
                   </div>
+                </div>
+                <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                  <button
+                    className="btn btn-secondary"
+                    style={{ flex: 1 }}
+                    onClick={() => {
+                      if (confirm('Удалить регулярный платёж?')) deleteRecurring(r.id);
+                    }}
+                  >
+                    Удалить
+                  </button>
+                  <button
+                    className="btn btn-secondary"
+                    style={{ flex: 1 }}
+                    onClick={() => {
+                      updateRecurring(r.id, { isActive: !r.isActive });
+                    }}
+                  >
+                    {r.isActive ? 'Деактивировать' : 'Активировать'}
+                  </button>
                 </div>
               </div>
             );

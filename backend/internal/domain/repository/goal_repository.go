@@ -10,4 +10,5 @@ type GoalRepository interface {
 	GetByID(ctx context.Context, id string, userID string) (*entity.SavingsGoal, error)
 	GetByUserID(ctx context.Context, userID string) ([]*entity.SavingsGoal, error)
 	Update(ctx context.Context, goal *entity.SavingsGoal) error
+	Delete(ctx context.Context, id string, userID string) error
 }
