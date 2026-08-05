@@ -115,6 +115,7 @@ func main() {
 	getGoalsUC := goal.NewGetGoalsUseCase(goalRepo)
 	topupGoalUC := goal.NewTopupGoalUseCase(goalRepo, accountRepo)
 	deleteGoalUC := goal.NewDeleteGoalUseCase(goalRepo)
+	updateGoalUC := goal.NewUpdateGoalUseCase(goalRepo)
 
 	exportTransactionsCSVUC := export.NewExportTransactionsCSVUseCase(transactionRepo)
 
@@ -127,7 +128,7 @@ func main() {
 		Dashboard:   handler.NewDashboardHandler(getDashboardDataUC),
 		Analytics:   handler.NewAnalyticsHandler(getCategoryStatsUC, getDailyStatsUC, getIncomeExpenseComparisonUC),
 		Recurring:   handler.NewRecurringHandler(createRecurringUC, getRecurringPaymentsUC, generateTransactionsUC, updateRecurringUC, deleteRecurringUC),
-		Goal:        handler.NewGoalHandler(createGoalUC, getGoalsUC, topupGoalUC, deleteGoalUC),
+		Goal:        handler.NewGoalHandler(createGoalUC, getGoalsUC, topupGoalUC, deleteGoalUC, updateGoalUC),
 		Export:      handler.NewExportHandler(exportTransactionsCSVUC),
 	}
 

@@ -82,6 +82,7 @@ interface AppState {
   setCategoryLimit: (categoryId: string, month: string, limit: number) => Promise<void>;
 
   createGoal: (data: { title: string; targetAmount: number; deadline: string }) => Promise<void>;
+  updateGoal: (id: string, data: { title: string; targetAmount: number; deadline: string }) => Promise<void>;
   topupGoal: (id: string, amount: number, accountId: string) => Promise<void>;
   deleteGoal: (id: string) => Promise<void>;
 
@@ -367,6 +368,18 @@ export const useStore = create<AppState>()((set, get) => ({
     set({ loading: true, error: null });
     try {
       await goalsService.create(data);
+      await get().loadGoals();
+      set({ loading: false });
+    } catch (e) {
+      set({ error: (e as Error).message, loading: false });
+      throw e;
+    }
+  },
+
+  updateGoal: async (id, data) => {
+    set({ loading: true, error: null });
+    try {
+      await goalsService.update(id, data);
       await get().loadGoals();
       set({ loading: false });
     } catch (e) {

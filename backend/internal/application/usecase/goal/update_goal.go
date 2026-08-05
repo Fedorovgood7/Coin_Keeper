@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"coinkeeper/internal/application/dto"
-	"coinkeeper/internal/domain"
 	"coinkeeper/internal/domain/repository"
 )
 
@@ -24,16 +23,10 @@ func (uc *UpdateGoalUseCase) Execute(ctx context.Context, userID string, goalID 
 	}
 
 	if req.Title != nil {
-		if *req.Title == "" {
-			return nil, domain.ErrInvalidInput
-		}
 		goal.Title = *req.Title
 	}
 
 	if req.TargetAmount != nil {
-		if *req.TargetAmount <= 0 {
-			return nil, domain.ErrInvalidInput
-		}
 		goal.TargetAmount = *req.TargetAmount
 	}
 

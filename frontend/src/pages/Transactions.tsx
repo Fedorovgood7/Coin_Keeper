@@ -116,23 +116,6 @@ export default function Transactions() {
                     {tx.type === 'income' ? '+' : tx.type === 'expense' ? '-' : ''}
                     {formatMoney(tx.amount)}
                   </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (confirm('Удалить операцию?')) deleteTransaction(tx.id);
-                    }}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      fontSize: 16,
-                      cursor: 'pointer',
-                      color: 'var(--danger)',
-                      padding: '4px 8px',
-                    }}
-                    title="Удалить"
-                  >
-                    🗑️
-                  </button>
                 </div>
               );
             })}

@@ -17,6 +17,7 @@ type GoalHandler struct {
 	getGoalsUC   *goal.GetGoalsUseCase
 	topupGoalUC  *goal.TopupGoalUseCase
 	deleteGoalUC *goal.DeleteGoalUseCase
+	updateGoalUC *goal.UpdateGoalUseCase
 }
 
 func NewGoalHandler(
@@ -24,12 +25,14 @@ func NewGoalHandler(
 	getUC *goal.GetGoalsUseCase,
 	topupUC *goal.TopupGoalUseCase,
 	deleteUC *goal.DeleteGoalUseCase,
+	updateUC *goal.UpdateGoalUseCase,
 ) *GoalHandler {
 	return &GoalHandler{
 		createGoalUC: createUC,
 		getGoalsUC:   getUC,
 		topupGoalUC:  topupUC,
 		deleteGoalUC: deleteUC,
+		updateGoalUC: updateUC,
 	}
 }
 
@@ -104,4 +107,24 @@ func (h *GoalHandler) DeleteGoal(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.OK(w, map[string]string{"message": "Goal deleted successfully"})
+}
+
+func (h *GoalHandler) UpdateGoal(w http.ResponseWriter, r *http.Request) {
+	userID := middleware.GetUserID(r.Context())
+	vars := mux.Vars(r)
+	goalID := vars["id"]
+
+	var req dto.UpdateGoalRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.BadRequest(w, "Invalid request body")
+		return
+	}
+
+	result, err := h.updateGoalUC.Execute(r.Context(), userID, goalID, req)
+	if err != nil {
+		response.HandleDomainError(w, err)
+		return
+	}
+
+	response.OK(w, result)
 }

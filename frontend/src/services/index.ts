@@ -162,6 +162,10 @@ export const goalsService = {
     return goalsApi.createGoal(data);
   },
 
+  async update(id: string, data: { title: string; targetAmount: number; deadline: string }): Promise<Goal> {
+    return goalsApi.updateGoal(id, data);
+  },
+
   async topup(id: string, amount: number, accountId: string): Promise<Goal> {
     return goalsApi.topupGoal(id, amount, accountId);
   },

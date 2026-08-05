@@ -1,4 +1,4 @@
-import { get, post, del } from './client';
+import { get, post, patch, del } from './client';
 import type { Goal } from '@/types';
 
 interface ApiResponse<T> {
@@ -16,6 +16,19 @@ export async function createGoal(data: {
   deadline: string;
 }) {
   const response = await post<ApiResponse<Goal>>('/goals', {
+    title: data.title,
+    target_amount: data.targetAmount,
+    deadline: data.deadline,
+  });
+  return response.data;
+}
+
+export async function updateGoal(id: string, data: {
+  title: string;
+  targetAmount: number;
+  deadline: string;
+}) {
+  const response = await patch<ApiResponse<Goal>>(`/goals/${id}`, {
     title: data.title,
     target_amount: data.targetAmount,
     deadline: data.deadline,

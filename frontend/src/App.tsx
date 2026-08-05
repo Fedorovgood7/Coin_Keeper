@@ -11,6 +11,8 @@ import Analytics from '@/pages/Analytics';
 import Categories from '@/pages/Categories';
 import AddTransaction from '@/pages/AddTransaction';
 import EditTransaction from '@/pages/EditTransaction';
+import EditGoal from '@/pages/EditGoal';
+import EditRecurring from '@/pages/EditRecurring';
 import './styles.css';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -131,6 +133,26 @@ export default function App() {
           <ProtectedRoute>
             <AppLayout>
               <EditTransaction />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/edit-goal/:id"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <EditGoal />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/edit-recurring/:id"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <EditRecurring />
             </AppLayout>
           </ProtectedRoute>
         }

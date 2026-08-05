@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useStore } from '@/store';
 import { formatMoney, getCurrentMonth } from '@/utils';
 
 export default function Budget() {
+  const navigate = useNavigate();
   const {
     monthlyBudget,
     categoryLimits,
@@ -262,7 +264,12 @@ export default function Budget() {
           goals.map((g) => {
             const deadline = g.deadline ? new Date(g.deadline).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
             return (
-              <div className="card" key={g.id}>
+              <div
+                className="card"
+                key={g.id}
+                onClick={() => navigate(`/edit-goal/${g.id}`)}
+                style={{ cursor: 'pointer' }}
+              >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                   <div className="icon-circle" style={{ background: '#4285f4', width: 40, height: 40, fontSize: 18 }}>
                     🎯
@@ -286,24 +293,6 @@ export default function Budget() {
                   <span style={{ fontWeight: 600 }}>{Math.round(g.progress)}%</span>
                   <span style={{ color: 'var(--muted)' }}>осталось {formatMoney(g.targetAmount - g.currentAmount)}</span>
                 </div>
-                {g.status !== 'completed' && (
-                  <button
-                    className="btn btn-primary"
-                    style={{ width: '100%', marginTop: 12 }}
-                    onClick={() => openContributeModal(g.id)}
-                  >
-                    Пополнить
-                  </button>
-                )}
-                <button
-                  className="btn btn-danger"
-                  style={{ width: '100%', marginTop: 8 }}
-                  onClick={() => {
-                    if (confirm('Удалить цель?')) deleteGoal(g.id);
-                  }}
-                >
-                  Удалить цель
-                </button>
               </div>
             );
           })
@@ -323,7 +312,12 @@ export default function Budget() {
             const nextDate = new Date(r.nextDate);
             const dateStr = nextDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
             return (
-              <div className="card" key={r.id}>
+              <div
+                className="card"
+                key={r.id}
+                onClick={() => navigate(`/edit-recurring/${r.id}`)}
+                style={{ cursor: 'pointer' }}
+              >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <div className="icon-circle" style={{ background: cat?.color || 'var(--border)', width: 40, height: 40, fontSize: 18 }}>
                     {cat?.icon || '🔄'}
@@ -339,26 +333,6 @@ export default function Budget() {
                       {r.type === 'income' ? '+' : '-'}{formatMoney(r.amount)}
                     </div>
                   </div>
-                </div>
-                <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                  <button
-                    className="btn btn-secondary"
-                    style={{ flex: 1 }}
-                    onClick={() => {
-                      if (confirm('Удалить регулярный платёж?')) deleteRecurring(r.id);
-                    }}
-                  >
-                    Удалить
-                  </button>
-                  <button
-                    className="btn btn-secondary"
-                    style={{ flex: 1 }}
-                    onClick={() => {
-                      updateRecurring(r.id, { isActive: !r.isActive });
-                    }}
-                  >
-                    {r.isActive ? 'Деактивировать' : 'Активировать'}
-                  </button>
                 </div>
               </div>
             );

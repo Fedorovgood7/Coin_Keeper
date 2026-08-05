@@ -74,6 +74,7 @@ func NewRouter(sessionService service.SessionService, handlers *Handlers) http.H
 
 	protected.HandleFunc("/goals", handlers.Goal.CreateGoal).Methods(http.MethodPost, http.MethodOptions)
 	protected.HandleFunc("/goals", handlers.Goal.GetGoals).Methods(http.MethodGet, http.MethodOptions)
+	protected.HandleFunc("/goals/{id}", handlers.Goal.UpdateGoal).Methods(http.MethodPatch, http.MethodOptions)
 	protected.HandleFunc("/goals/{id}/topup", handlers.Goal.TopupGoal).Methods(http.MethodPost, http.MethodOptions)
 	protected.HandleFunc("/goals/{id}", handlers.Goal.DeleteGoal).Methods(http.MethodDelete, http.MethodOptions)
 
