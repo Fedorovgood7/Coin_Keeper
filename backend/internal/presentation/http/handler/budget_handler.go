@@ -13,6 +13,7 @@ import (
 
 type BudgetHandler struct {
 	getMonthlyBudgetUC        *budget.GetMonthlyBudgetUseCase
+	setMonthlyBudgetUC        *budget.SetMonthlyBudgetUseCase
 	setCategoryLimitUC        *budget.SetCategoryLimitUseCase
 	getCategoryLimitsUC       *budget.GetCategoryLimitsUseCase
 	calculateSafeDailyAmountUC *budget.CalculateSafeDailyAmountUseCase
@@ -20,12 +21,14 @@ type BudgetHandler struct {
 
 func NewBudgetHandler(
 	getMonthlyBudgetUC *budget.GetMonthlyBudgetUseCase,
+	setMonthlyBudgetUC *budget.SetMonthlyBudgetUseCase,
 	setCategoryLimitUC *budget.SetCategoryLimitUseCase,
 	getCategoryLimitsUC *budget.GetCategoryLimitsUseCase,
 	calculateSafeDailyAmountUC *budget.CalculateSafeDailyAmountUseCase,
 ) *BudgetHandler {
 	return &BudgetHandler{
 		getMonthlyBudgetUC:        getMonthlyBudgetUC,
+		setMonthlyBudgetUC:        setMonthlyBudgetUC,
 		setCategoryLimitUC:        setCategoryLimitUC,
 		getCategoryLimitsUC:       getCategoryLimitsUC,
 		calculateSafeDailyAmountUC: calculateSafeDailyAmountUC,
@@ -41,6 +44,29 @@ func (h *BudgetHandler) GetMonthlyBudget(w http.ResponseWriter, r *http.Request)
 	}
 
 	result, err := h.getMonthlyBudgetUC.Execute(r.Context(), userID, month)
+	if err != nil {
+		response.HandleDomainError(w, err)
+		return
+	}
+
+	response.OK(w, result)
+}
+
+func (h *BudgetHandler) SetMonthlyBudget(w http.ResponseWriter, r *http.Request) {
+	userID := middleware.GetUserID(r.Context())
+
+	var req dto.SetMonthlyBudgetRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.BadRequest(w, "Invalid request body")
+		return
+	}
+
+	if req.PlannedAmount <= 0 {
+		response.BadRequest(w, "Valid planned_amount is required")
+		return
+	}
+
+	result, err := h.setMonthlyBudgetUC.Execute(r.Context(), userID, req)
 	if err != nil {
 		response.HandleDomainError(w, err)
 		return

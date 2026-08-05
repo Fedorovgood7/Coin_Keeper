@@ -116,6 +116,10 @@ export const budgetService = {
     return budgetApi.getMonthlyBudget(month);
   },
 
+  async setMonthly(month: string, plannedAmount: number): Promise<MonthlyBudget> {
+    return budgetApi.setMonthlyBudget(month, plannedAmount);
+  },
+
   async getCategoryLimits(month: string): Promise<CategoryLimit[]> {
     return budgetApi.getCategoryLimits(month);
   },

@@ -94,6 +94,7 @@ func main() {
 	deleteTransactionUC := transaction.NewDeleteTransactionUseCase(transactionRepo, accountRepo)
 
 	getMonthlyBudgetUC := budget.NewGetMonthlyBudgetUseCase(budgetRepo, transactionRepo)
+	setMonthlyBudgetUC := budget.NewSetMonthlyBudgetUseCase(budgetRepo)
 	setCategoryLimitUC := budget.NewSetCategoryLimitUseCase(budgetRepo)
 	getCategoryLimitsUC := budget.NewGetCategoryLimitsUseCase(budgetRepo)
 	calculateSafeDailyAmountUC := budget.NewCalculateSafeDailyAmountUseCase(budgetRepo)
@@ -119,7 +120,7 @@ func main() {
 		Account:     handler.NewAccountHandler(createAccountUC, getAccountsUC, updateAccountUC, archiveAccountUC),
 		Category:    handler.NewCategoryHandler(getCategoriesUC, createCategoryUC, updateCategoryUC),
 		Transaction: handler.NewTransactionHandler(createTransactionUC, getTransactionsUC, updateTransactionUC, deleteTransactionUC),
-		Budget:      handler.NewBudgetHandler(getMonthlyBudgetUC, setCategoryLimitUC, getCategoryLimitsUC, calculateSafeDailyAmountUC),
+		Budget:      handler.NewBudgetHandler(getMonthlyBudgetUC, setMonthlyBudgetUC, setCategoryLimitUC, getCategoryLimitsUC, calculateSafeDailyAmountUC),
 		Dashboard:   handler.NewDashboardHandler(getDashboardDataUC),
 		Analytics:   handler.NewAnalyticsHandler(getCategoryStatsUC, getDailyStatsUC, getIncomeExpenseComparisonUC),
 		Recurring:   handler.NewRecurringHandler(createRecurringUC, getRecurringPaymentsUC, generateTransactionsUC),

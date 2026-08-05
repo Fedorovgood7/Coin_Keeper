@@ -7,6 +7,7 @@ export default function Budget() {
     monthlyBudget,
     categoryLimits,
     goals,
+    recurring,
     categories,
     accounts,
     loadBudget,
@@ -14,14 +15,19 @@ export default function Budget() {
     loadCategories,
     loadAccounts,
     loadGoals,
+    loadRecurring,
+    setMonthlyBudget,
     setCategoryLimit,
     createGoal,
     topupGoal,
+    createRecurring,
   } = useStore();
 
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [showContributeModal, setShowContributeModal] = useState(false);
+  const [showBudgetModal, setShowBudgetModal] = useState(false);
+  const [showRecurringModal, setShowRecurringModal] = useState(false);
   const [limitCategoryId, setLimitCategoryId] = useState('');
   const [limitAmount, setLimitAmount] = useState('');
   const [goalTitle, setGoalTitle] = useState('');
@@ -30,6 +36,14 @@ export default function Budget() {
   const [contributeAmount, setContributeAmount] = useState('');
   const [contributeFromAccount, setContributeFromAccount] = useState('');
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
+  const [budgetAmount, setBudgetAmount] = useState('');
+  const [recurringType, setRecurringType] = useState<'expense' | 'income'>('expense');
+  const [recurringAmount, setRecurringAmount] = useState('');
+  const [recurringAccountId, setRecurringAccountId] = useState('');
+  const [recurringCategoryId, setRecurringCategoryId] = useState('');
+  const [recurringPeriodicity, setRecurringPeriodicity] = useState<'daily' | 'weekly' | 'monthly'>('monthly');
+  const [recurringNextDate, setRecurringNextDate] = useState('');
+  const [recurringComment, setRecurringComment] = useState('');
 
   const month = getCurrentMonth();
 
@@ -39,11 +53,15 @@ export default function Budget() {
     loadCategories();
     loadAccounts();
     loadGoals();
+    loadRecurring();
   }, []);
 
   useEffect(() => {
     if (accounts.length > 0 && !contributeFromAccount) {
       setContributeFromAccount(accounts[0].id);
+    }
+    if (accounts.length > 0 && !recurringAccountId) {
+      setRecurringAccountId(accounts[0].id);
     }
   }, [accounts]);
 
@@ -94,7 +112,45 @@ export default function Budget() {
     setShowContributeModal(false);
   };
 
+  const openBudgetModal = () => {
+    setBudgetAmount(monthlyBudget?.plannedAmount.toString() || '');
+    setShowBudgetModal(true);
+  };
+
+  const handleSaveBudget = async () => {
+    if (!budgetAmount || parseFloat(budgetAmount) <= 0) return;
+    await setMonthlyBudget(month, parseFloat(budgetAmount));
+    setShowBudgetModal(false);
+  };
+
+  const openRecurringModal = () => {
+    setRecurringType('expense');
+    setRecurringAmount('');
+    setRecurringAccountId(accounts[0]?.id || '');
+    setRecurringCategoryId('');
+    setRecurringPeriodicity('monthly');
+    setRecurringNextDate('');
+    setRecurringComment('');
+    setShowRecurringModal(true);
+  };
+
+  const handleSaveRecurring = async () => {
+    if (!recurringAmount || !recurringAccountId || !recurringCategoryId || !recurringNextDate) return;
+    await createRecurring({
+      type: recurringType,
+      amount: parseFloat(recurringAmount),
+      accountId: recurringAccountId,
+      categoryId: recurringCategoryId,
+      periodicity: recurringPeriodicity,
+      nextDate: new Date(recurringNextDate).toISOString(),
+      comment: recurringComment,
+    });
+    setShowRecurringModal(false);
+  };
+
   const expenseCategories = categories.filter((c) => c.type === 'expense');
+  const incomeCategories = categories.filter((c) => c.type === 'income');
+  const recurringCategories = recurringType === 'expense' ? expenseCategories : incomeCategories;
 
   return (
     <div className="page-wrapper">
@@ -102,6 +158,12 @@ export default function Budget() {
         <div className="header">
           <h1>Бюджет</h1>
           <div className="toolbar">
+            <button className="toolbar-btn toolbar-btn-primary" onClick={openBudgetModal}>
+              Бюджет
+            </button>
+            <button className="toolbar-btn toolbar-btn-primary" onClick={openRecurringModal}>
+              + Платёж
+            </button>
             <button className="toolbar-btn toolbar-btn-primary" onClick={openGoalModal}>
               + Цель
             </button>
@@ -235,6 +297,42 @@ export default function Budget() {
           })
         )}
 
+        <div className="section-title" style={{ marginTop: 24 }}>
+          <span>Регулярные платежи</span>
+        </div>
+
+        {recurring.length === 0 ? (
+          <div className="empty-state" style={{ padding: 24 }}>
+            <div style={{ fontSize: 13, color: 'var(--muted)' }}>Нет регулярных платежей</div>
+          </div>
+        ) : (
+          recurring.map((r) => {
+            const cat = categories.find((c) => c.id === r.categoryId);
+            const nextDate = new Date(r.nextDate);
+            const dateStr = nextDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+            return (
+              <div className="card" key={r.id}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div className="icon-circle" style={{ background: cat?.color || 'var(--border)', width: 40, height: 40, fontSize: 18 }}>
+                    {cat?.icon || '🔄'}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>{r.comment || cat?.name || 'Платёж'}</div>
+                    <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+                      {dateStr} · {r.periodicity === 'daily' ? 'Ежедневно' : r.periodicity === 'weekly' ? 'Еженедельно' : 'Ежемесячно'}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: r.type === 'income' ? 'var(--success)' : 'var(--danger)' }}>
+                      {r.type === 'income' ? '+' : '-'}{formatMoney(r.amount)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
+
         <div className="bottom-spacer"></div>
       </div>
 
@@ -360,6 +458,136 @@ export default function Budget() {
             </div>
             <button className="btn btn-primary" style={{ width: '100%' }} onClick={handleContribute}>
               Пополнить
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showBudgetModal && (
+        <div className="modal active" onClick={() => setShowBudgetModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-title">Месячный бюджет</div>
+              <button className="modal-close" onClick={() => setShowBudgetModal(false)}>
+                
+              </button>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Планируемый бюджет на месяц</label>
+              <input
+                className="form-input"
+                type="number"
+                value={budgetAmount}
+                onChange={(e) => setBudgetAmount(e.target.value)}
+                placeholder="0"
+              />
+            </div>
+            <button className="btn btn-primary" style={{ width: '100%' }} onClick={handleSaveBudget}>
+              Сохранить
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showRecurringModal && (
+        <div className="modal active" onClick={() => setShowRecurringModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-title">Новый регулярный платёж</div>
+              <button className="modal-close" onClick={() => setShowRecurringModal(false)}>
+                
+              </button>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Тип</label>
+              <div className="grid-2">
+                <button
+                  className={`btn ${recurringType === 'expense' ? 'btn-primary' : 'btn-secondary'}`}
+                  onClick={() => setRecurringType('expense')}
+                >
+                  Расход
+                </button>
+                <button
+                  className={`btn ${recurringType === 'income' ? 'btn-primary' : 'btn-secondary'}`}
+                  onClick={() => setRecurringType('income')}
+                >
+                  Доход
+                </button>
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Сумма</label>
+              <input
+                className="form-input"
+                type="number"
+                value={recurringAmount}
+                onChange={(e) => setRecurringAmount(e.target.value)}
+                placeholder="0"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Счёт</label>
+              <select
+                className="form-input"
+                value={recurringAccountId}
+                onChange={(e) => setRecurringAccountId(e.target.value)}
+              >
+                {accounts
+                  .filter((a) => !a.isArchived)
+                  .map((acc) => (
+                    <option key={acc.id} value={acc.id}>
+                      {acc.name}
+                    </option>
+                  ))}
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Категория</label>
+              <select
+                className="form-input"
+                value={recurringCategoryId}
+                onChange={(e) => setRecurringCategoryId(e.target.value)}
+              >
+                <option value="">Выберите категорию</option>
+                {recurringCategories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.icon} {cat.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Периодичность</label>
+              <select
+                className="form-input"
+                value={recurringPeriodicity}
+                onChange={(e) => setRecurringPeriodicity(e.target.value as 'daily' | 'weekly' | 'monthly')}
+              >
+                <option value="daily">Ежедневно</option>
+                <option value="weekly">Еженедельно</option>
+                <option value="monthly">Ежемесячно</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Дата следующего платежа</label>
+              <input
+                className="form-input"
+                type="date"
+                value={recurringNextDate}
+                onChange={(e) => setRecurringNextDate(e.target.value)}
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Комментарий</label>
+              <input
+                className="form-input"
+                value={recurringComment}
+                onChange={(e) => setRecurringComment(e.target.value)}
+                placeholder="Необязательно"
+              />
+            </div>
+            <button className="btn btn-primary" style={{ width: '100%' }} onClick={handleSaveRecurring}>
+              Создать
             </button>
           </div>
         </div>

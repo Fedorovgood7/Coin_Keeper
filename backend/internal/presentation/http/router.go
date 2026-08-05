@@ -55,6 +55,7 @@ func NewRouter(sessionService service.SessionService, handlers *Handlers) http.H
 	protected.HandleFunc("/transactions/{id}", handlers.Transaction.DeleteTransaction).Methods(http.MethodDelete, http.MethodOptions)
 
 	protected.HandleFunc("/budget/monthly", handlers.Budget.GetMonthlyBudget).Methods(http.MethodGet, http.MethodOptions)
+	protected.HandleFunc("/budget/monthly", handlers.Budget.SetMonthlyBudget).Methods(http.MethodPost, http.MethodOptions)
 	protected.HandleFunc("/budget/category-limit", handlers.Budget.SetCategoryLimit).Methods(http.MethodPost, http.MethodOptions)
 	protected.HandleFunc("/budget/category-limits", handlers.Budget.GetCategoryLimits).Methods(http.MethodGet, http.MethodOptions)
 	protected.HandleFunc("/budget/safe-daily-amount", handlers.Budget.GetSafeDailyAmount).Methods(http.MethodGet, http.MethodOptions)

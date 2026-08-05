@@ -78,6 +78,7 @@ interface AppState {
   }) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
 
+  setMonthlyBudget: (month: string, plannedAmount: number) => Promise<void>;
   setCategoryLimit: (categoryId: string, month: string, limit: number) => Promise<void>;
 
   createGoal: (data: { title: string; targetAmount: number; deadline: string }) => Promise<void>;
@@ -318,6 +319,18 @@ export const useStore = create<AppState>()((set, get) => ({
     try {
       await transactionsService.delete(id);
       await Promise.all([get().loadTransactions(), get().loadAccounts(), get().loadDashboard()]);
+      set({ loading: false });
+    } catch (e) {
+      set({ error: (e as Error).message, loading: false });
+      throw e;
+    }
+  },
+
+  setMonthlyBudget: async (month, plannedAmount) => {
+    set({ loading: true, error: null });
+    try {
+      await budgetService.setMonthly(month, plannedAmount);
+      await get().loadBudget(month);
       set({ loading: false });
     } catch (e) {
       set({ error: (e as Error).message, loading: false });
