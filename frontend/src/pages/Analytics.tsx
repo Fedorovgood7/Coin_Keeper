@@ -104,14 +104,15 @@ export default function Analytics() {
                             bottom: '100%',
                             left: '50%',
                             transform: 'translateX(-50%)',
-                            background: 'var(--accent)',
-                            color: 'var(--bg)',
+                            background: '#FFD700',
+                            color: '#000',
                             padding: '4px 8px',
                             borderRadius: 4,
                             fontSize: 11,
                             fontWeight: 600,
                             whiteSpace: 'nowrap',
                             marginBottom: 4,
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
                           }}
                         >
                           {formatMoney(day.amount)}
