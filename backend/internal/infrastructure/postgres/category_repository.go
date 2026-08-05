@@ -167,8 +167,13 @@ func (r *CategoryRepository) Update(ctx context.Context, category *entity.Catego
 	query := `
 		UPDATE categories
 		SET name = $1, color = $2, icon = $3, updated_at = $4
-		WHERE id = $5 AND (COALESCE(user_id, '') = $6 OR is_default = true)
+		WHERE id = $5 AND (user_id = $6 OR is_default = true)
 	`
+
+	var userID interface{}
+	if category.UserID != "" {
+		userID = category.UserID
+	}
 
 	_, err := r.db.ExecContext(
 		ctx, query,
@@ -177,7 +182,7 @@ func (r *CategoryRepository) Update(ctx context.Context, category *entity.Catego
 		category.Icon,
 		category.UpdatedAt,
 		category.ID,
-		category.UserID,
+		userID,
 	)
 
 	return err

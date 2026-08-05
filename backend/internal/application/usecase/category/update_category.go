@@ -29,6 +29,12 @@ func (uc *UpdateCategoryUseCase) Execute(ctx context.Context, userID string, req
 		category.UpdateIcon(*req.Icon)
 	}
 
+	// Устанавливаем UserID для проверки прав доступа
+	// Если категория дефолтная, оставляем пустым, чтобы сработало условие is_default = true
+	if !category.IsDefault {
+		category.UserID = userID
+	}
+
 	if err := uc.categoryRepo.Update(ctx, category); err != nil {
 		return nil, err
 	}
