@@ -96,7 +96,7 @@ export default function Accounts() {
                       : '#4285f4',
                 }}
               >
-                {acc.type === 'cash' ? '💵' : acc.type === 'deposit' ? '' : '💳'}
+                {acc.type === 'cash' ? '💵' : acc.type === 'deposit' ? '🏦' : '💳'}
               </div>
               <div className="list-item-content">
                 <div className="list-item-title">{acc.name}</div>
@@ -160,7 +160,7 @@ export default function Accounts() {
                     {([
                       { value: 'cash', label: 'Наличные', icon: '💵' },
                       { value: 'card', label: 'Карта', icon: '💳' },
-                      { value: 'deposit', label: 'Накопительный', icon: '' },
+                      { value: 'deposit', label: 'Накопительный', icon: '🏦' },
                     ] as const).map((t) => (
                       <button
                         key={t.value}

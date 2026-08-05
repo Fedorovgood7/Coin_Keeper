@@ -261,7 +261,7 @@ input, select, textarea {
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
   display: none;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
   z-index: 1000;
 }
@@ -272,8 +272,8 @@ input, select, textarea {
 
 .modal-content {
   background: var(--bg);
-  border-radius: var(--radius) var(--radius) 0 0;
-  width: 100%;
+  border-radius: var(--radius);
+  width: 90%;
   max-width: 480px;
   max-height: 90vh;
   overflow-y: auto;
@@ -1163,14 +1163,8 @@ input, select, textarea {
     padding: 32px 40px;
   }
 
-  .modal {
-    align-items: center;
-  }
-
   .modal-content {
-    border-radius: var(--radius);
     max-width: 480px;
-    margin: auto;
   }
 
   .grid-2 {
