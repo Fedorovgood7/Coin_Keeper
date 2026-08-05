@@ -6,7 +6,7 @@ import { formatMoney } from '@/utils';
 export default function EditTransaction() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { transactions, accounts, categories, loadTransactions, updateTransaction, error, clearError } = useStore();
+  const { transactions, accounts, categories, loadTransactions, updateTransaction, deleteTransaction, error, clearError } = useStore();
   
   const [type, setType] = useState<'expense' | 'income' | 'transfer'>('expense');
   const [amount, setAmount] = useState('');
@@ -53,6 +53,20 @@ export default function EditTransaction() {
         date: new Date(date).toISOString(),
         comment,
       });
+      navigate('/transactions');
+    } catch (e) {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!id) return;
+    if (!confirm('Удалить операцию?')) return;
+    
+    setSubmitting(true);
+    clearError();
+    try {
+      await deleteTransaction(id);
       navigate('/transactions');
     } catch (e) {
       setSubmitting(false);
@@ -220,6 +234,15 @@ export default function EditTransaction() {
           disabled={!amount || parseFloat(amount) <= 0 || (type !== 'transfer' && !categoryId) || submitting}
         >
           {submitting ? 'Сохранение...' : 'Сохранить'}
+        </button>
+
+        <button
+          className="btn btn-danger"
+          style={{ width: '100%', padding: 16, marginTop: 12 }}
+          onClick={handleDelete}
+          disabled={submitting}
+        >
+          {submitting ? 'Удаление...' : 'Удалить операцию'}
         </button>
 
         <div className="bottom-spacer"></div>

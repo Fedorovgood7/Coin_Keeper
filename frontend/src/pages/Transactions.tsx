@@ -80,7 +80,12 @@ export default function Transactions() {
               const account = accounts.find((a) => a.id === tx.accountId);
               const targetAccount = accounts.find((a) => a.id === tx.toAccountId);
               return (
-                <div className="list-item" key={tx.id}>
+                <div
+                  className="list-item"
+                  key={tx.id}
+                  onClick={() => navigate(`/edit-transaction/${tx.id}`)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <div
                     className="icon-circle"
                     style={{ background: category?.color || 'var(--border)' }}
@@ -112,21 +117,8 @@ export default function Transactions() {
                     {formatMoney(tx.amount)}
                   </div>
                   <button
-                    onClick={() => navigate(`/edit-transaction/${tx.id}`)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      fontSize: 16,
-                      cursor: 'pointer',
-                      color: 'var(--accent-secondary)',
-                      padding: '4px 8px',
-                    }}
-                    title="Редактировать"
-                  >
-                    ✏️
-                  </button>
-                  <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       if (confirm('Удалить операцию?')) deleteTransaction(tx.id);
                     }}
                     style={{

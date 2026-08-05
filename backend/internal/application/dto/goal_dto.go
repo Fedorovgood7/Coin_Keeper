@@ -13,6 +13,12 @@ type TopupGoalRequest struct {
 	AccountID string  `json:"account_id" validate:"required"`
 }
 
+type UpdateGoalRequest struct {
+	Title        *string    `json:"title,omitempty"`
+	TargetAmount *float64   `json:"target_amount,omitempty"`
+	Deadline     *time.Time `json:"deadline,omitempty"`
+}
+
 type GoalResponse struct {
 	ID            string    `json:"id"`
 	Title         string    `json:"title"`
